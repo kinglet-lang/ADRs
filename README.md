@@ -34,13 +34,13 @@ Decisions can be **superseded** by a newer entry when direction changes.
 
 ## Index
 
-| # | Title | Status |
-|---|-------|--------|
-| 0001 | Design principles | accepted |
-| 0002 | Trait system redesign | draft |
-| 0003 | Error handling: ??, try, and Cast unification | accepted |
-| 0004 | Backend architecture: KIR + dual backend | draft |
-| 0005 | KBC bytecode format evolution | partial |
-| 0006 | Standard library roadmap | deferred |
-| 0007 | LSP roadmap | deferred |
-| 0008 | Pending syntax and performance items | draft |
+| # | Title | Status | Date |
+|---|-------|--------|------|
+| 0001 | Pending syntax and performance items | draft | 2026-05-17 |
+| 0002 | Design principles | accepted | 2026-05-21 |
+| 0003 | Standard library roadmap | deferred | 2026-05-29 |
+| 0004 | LSP roadmap | deferred | 2026-05-30 |
+| 0005 | Backend architecture: KIR + dual backend | draft | 2026-05-31 |
+| 0006 | Error handling: ??, try, and Cast unification | accepted | 2026-06-01 |
+| 0007 | Trait system redesign | draft | 2026-06-02 |
+| 0008 | KBC bytecode format evolution | partial | 2026-06-02 |

@@ -1,4 +1,4 @@
-# 0001 — Design Principles
+# 0002 — Design Principles
 
 - **Status**: accepted
 - **Date**: 2026-05-21
@@ -40,7 +40,7 @@ Compile-time polymorphism via monomorphization (like C++ templates). Runtime pol
 ## Consequences
 
 - **`self` keyword**: contradicts value-semantics-as-default. **Remove.**
-- **Trait syntax**: current `trait`/`impl` mimics Rust. **Redesign** (see 0002).
+- **Trait syntax**: current `trait`/`impl` mimics Rust. **Redesign** (see 0007).
 - **`fn` keyword**: Kinglet uses C-style `int main()` declarations. **Keep.**
 - Every future feature proposal must answer: does this serve all three pillars?
   If not, the feature needs exceptional justification.

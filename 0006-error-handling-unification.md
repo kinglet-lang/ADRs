@@ -1,4 +1,4 @@
-# 0003 — Error Handling: ??, try, and Cast Unification
+# 0006 — Error Handling: ??, try, and Cast Unification
 
 - **Status**: accepted
 - **Date**: 2026-06-01

@@ -1,7 +1,7 @@
-# 0006 — Standard Library Roadmap
+# 0003 — Standard Library Roadmap
 
 - **Status**: deferred
-- **Date**: 2026-06-02
+- **Date**: 2026-05-29
 
 ## Context
 
@@ -27,7 +27,7 @@ User-facing API:
 - `std/option.kl` — `Option<T>` enum
 - `std/string/mod.kl` — builder, split, join
 - `std/math/mod.kl` — min, max, abs, pow
-- `std/iter/mod.kl` — Iterator + map/filter/reduce adaptors (depends on trait system redesign, see 0002)
+- `std/iter/mod.kl` — Iterator + map/filter/reduce adaptors (depends on trait system redesign, see 0007)
 
 ### Phase C — Self-hosted VM (long-term)
 
@@ -41,5 +41,5 @@ Once the VM runs on itself, the C++ bootstrap compiler is retired.
 
 ## Dependencies
 
-- Trait system (0002) needed for `Iterator` and generic combinators.
-- KBC P2 (0005) needed before self-hosted VM can load .kbc files.
+- Trait system (0007) needed for `Iterator` and generic combinators.
+- KBC P2 (0008) needed before self-hosted VM can load .kbc files.

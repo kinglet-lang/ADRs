@@ -1,4 +1,4 @@
-# 0004 — Backend Architecture: KIR + Dual Backend
+# 0005 — Backend Architecture: KIR + Dual Backend
 
 - **Status**: draft
 - **Date**: 2026-05-31
@@ -87,7 +87,7 @@ fn describe(c: Color) -> int {
 ## Out of scope
 
 - Standard library layout
-- `??` / `try` syntax (see 0003)
+- `??` / `try` syntax (see 0006)
 - Concurrency model
 - GC strategy (LLVM path will need one eventually)
 

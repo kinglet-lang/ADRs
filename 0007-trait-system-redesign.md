@@ -1,4 +1,4 @@
-# 0002 — Trait System Redesign
+# 0007 — Trait System Redesign
 
 - **Status**: draft
 - **Date**: 2026-06-02
@@ -18,7 +18,7 @@ impl Printable for int {
 ```
 
 Problems:
-1. `self` contradicts value-semantics-as-default (see 0001).
+1. `self` contradicts value-semantics-as-default (see 0002).
 2. `trait`/`impl` separation doesn't match C++ concepts' "constraint-as-interface" model.
 3. Syntax clashes with Kinglet's C-style function declarations (`int main()`).
 

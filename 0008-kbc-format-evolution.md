@@ -1,4 +1,4 @@
-# 0005 — KBC Bytecode Format Evolution
+# 0008 — KBC Bytecode Format Evolution
 
 - **Status**: partial (P0 + P1 implemented; P2 + P3 deferred)
 - **Date**: 2026-06-02

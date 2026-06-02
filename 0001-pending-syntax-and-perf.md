@@ -1,7 +1,7 @@
-# 0008 — Pending Syntax and Performance Items
+# 0001 — Pending Syntax and Performance Items
 
 - **Status**: draft
-- **Date**: 2026-06-02
+- **Date**: 2026-05-17
 
 ## Context
 
