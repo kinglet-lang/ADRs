@@ -45,3 +45,4 @@ Decisions can be **superseded** by a newer entry when direction changes.
 | 0007 | Trait system redesign | superseded-by 0009 | 2026-06-02 |
 | 0008 | KBC bytecode format evolution | partial | 2026-06-02 |
 | 0009 | Concepts landing | accepted | 2026-06-03 |
+| 0010 | VM redesign and embedded self-host binary | draft | 2026-06-03 |
