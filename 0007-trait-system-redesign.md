@@ -79,5 +79,5 @@ impl Printable for int {
 
 ## Dependencies
 
-- 0001 (design principles) — accepted.
+- 0002 (design principles) — accepted.
 - `self` keyword removal — must be done before this.
