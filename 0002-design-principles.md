@@ -44,3 +44,11 @@ Compile-time polymorphism via monomorphization (like C++ templates). Runtime pol
 - **`fn` keyword**: Kinglet uses C-style `int main()` declarations. **Do not introduce `fn`; keep C-style declarations.**
 - Every future feature proposal must answer: does this serve all three pillars?
   If not, the feature needs exceptional justification.
+
+## Implementation Status
+
+| Consequence | Status |
+|---|---|
+| `self` keyword removed | Done (0009) |
+| `trait`/`impl` replaced with `concept` + structural satisfaction | Done (0009) |
+| `fn` keyword not introduced; C-style declarations retained | No action needed |

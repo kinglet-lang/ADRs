@@ -42,5 +42,6 @@ Decisions can be **superseded** by a newer entry when direction changes.
 | 0004 | LSP roadmap | deferred | 2026-05-30 |
 | 0005 | Backend architecture: KIR + dual backend | draft | 2026-05-31 |
 | 0006 | Error handling: ??, try, and Cast unification | accepted | 2026-06-01 |
-| 0007 | Trait system redesign | draft | 2026-06-02 |
+| 0007 | Trait system redesign | superseded-by 0009 | 2026-06-02 |
 | 0008 | KBC bytecode format evolution | partial | 2026-06-02 |
+| 0009 | Concepts landing | accepted | 2026-06-03 |
