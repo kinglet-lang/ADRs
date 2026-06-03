@@ -1,7 +1,8 @@
 # 0009 — Concepts Landing
 
-- **Status**: accepted
-- **Date**: 2026-06-03
+- **Status**: implemented
+- **Proposed**: 2026-06-03
+- **Completed**: 2026-06-03
 
 ## Context
 

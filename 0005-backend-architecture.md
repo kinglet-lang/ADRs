@@ -1,7 +1,7 @@
 # 0005 — Backend Architecture: KIR + Dual Backend
 
 - **Status**: draft
-- **Date**: 2026-05-31
+- **Proposed**: 2026-05-31
 
 ## Context
 

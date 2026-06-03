@@ -1,7 +1,8 @@
 # 0006 — Error Handling: ??, try, and Cast Unification
 
-- **Status**: accepted
-- **Date**: 2026-06-01
+- **Status**: implemented
+- **Proposed**: 2026-06-01
+- **Completed**: 2026-06-02
 
 ## Context
 

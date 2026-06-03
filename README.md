@@ -10,7 +10,8 @@ Every decision file follows this structure:
 # NNNN — Title
 
 - **Status**: draft / accepted / implemented / deferred / superseded-by NNNN
-- **Date**: YYYY-MM-DD
+- **Proposed**: YYYY-MM-DD
+- **Completed**: YYYY-MM-DD (when implemented)
 
 ## Context
 Why this decision is needed.
@@ -30,19 +31,24 @@ draft → accepted → implemented
   └── deferred / superseded
 ```
 
-Decisions can be **superseded** by a newer entry when direction changes.
+- **draft** — still under discussion, direction not yet decided
+- **accepted** — design finalized, awaiting implementation
+- **implemented** — code landed and behavior is live
+- **deferred** — decision postponed, not actively pursued
+- **superseded** — replaced by a newer decision (link provided)
 
 ## Index
 
-| # | Title | Status | Date |
-|---|-------|--------|------|
-| 0001 | Pending syntax and performance items | draft | 2026-05-17 |
-| 0002 | Design principles | accepted | 2026-05-21 |
-| 0003 | Standard library roadmap | deferred | 2026-05-29 |
-| 0004 | LSP roadmap | deferred | 2026-05-30 |
-| 0005 | Backend architecture: KIR + dual backend | draft | 2026-05-31 |
-| 0006 | Error handling: ??, try, and Cast unification | accepted | 2026-06-01 |
-| 0007 | Trait system redesign | superseded-by 0009 | 2026-06-02 |
-| 0008 | KBC bytecode format evolution | partial | 2026-06-02 |
-| 0009 | Concepts landing | accepted | 2026-06-03 |
-| 0010 | VM redesign and embedded self-host binary | draft | 2026-06-03 |
+| # | Title | Status | Proposed | Completed |
+|---|-------|--------|----------|-----------|
+| 0001 | [Pending syntax and performance items](0001-pending-syntax-and-perf.md) | draft | 2026-05-17 | |
+| 0002 | [Design principles](0002-design-principles.md) | implemented | 2026-05-21 | 2026-05-25 |
+| 0003 | [Standard library roadmap](0003-stdlib-roadmap.md) | deferred | 2026-05-29 | |
+| 0004 | [LSP roadmap](0004-lsp-roadmap.md) | deferred | 2026-05-30 | |
+| 0005 | [Backend architecture: KIR + dual backend](0005-backend-architecture.md) | draft | 2026-05-31 | |
+| 0006 | [Error handling: ??, try, and Cast unification](0006-error-handling-unification.md) | implemented | 2026-06-01 | 2026-06-02 |
+| 0007 | [Trait system redesign](0007-trait-system-redesign.md) | superseded-by [0009](0009-concepts-landing.md) | 2026-06-02 | |
+| 0008 | [KBC bytecode format evolution](0008-kbc-format-evolution.md) | implemented | 2026-06-02 | 2026-06-03 |
+| 0009 | [Concepts landing](0009-concepts-landing.md) | implemented | 2026-06-03 | 2026-06-03 |
+| 0010 | [VM redesign and embedded self-host binary](0010-vm-redesign.md) | draft | 2026-06-03 | |
+| 0011 | [Module system redesign](0011-module-system-redesign.md) | accepted | 2026-06-03 | |

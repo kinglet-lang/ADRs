@@ -1,7 +1,8 @@
 # 0008 — KBC Bytecode Format Evolution
 
-- **Status**: complete (P0–P3 all implemented)
-- **Date**: 2026-06-02
+- **Status**: implemented
+- **Proposed**: 2026-06-02
+- **Completed**: 2026-06-03
 
 ## Context
 

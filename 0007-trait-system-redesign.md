@@ -1,7 +1,7 @@
 # 0007 — Trait System Redesign
 
 - **Status**: superseded-by 0009
-- **Date**: 2026-06-02
+- **Proposed**: 2026-06-02
 
 > Superseded by [0009 — Concepts Landing](0009-concepts-landing.md).
 > Retained as historical context for the design exploration.

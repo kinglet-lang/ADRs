@@ -1,7 +1,7 @@
 # 0001 — Pending Syntax and Performance Items
 
 - **Status**: draft
-- **Date**: 2026-05-17
+- **Proposed**: 2026-05-17
 
 ## Context
 

@@ -1,7 +1,8 @@
 # 0002 — Design Principles
 
-- **Status**: accepted
-- **Date**: 2026-05-21
+- **Status**: implemented
+- **Proposed**: 2026-05-21
+- **Completed**: 2026-05-25
 
 ## Context
 

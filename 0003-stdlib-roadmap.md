@@ -1,7 +1,7 @@
 # 0003 — Standard Library Roadmap
 
 - **Status**: deferred
-- **Date**: 2026-05-29
+- **Proposed**: 2026-05-29
 
 ## Context
 

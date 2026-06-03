@@ -1,7 +1,7 @@
 # 0004 — LSP Roadmap
 
 - **Status**: deferred
-- **Date**: 2026-05-30
+- **Proposed**: 2026-05-30
 
 ## Context
 

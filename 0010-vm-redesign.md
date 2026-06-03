@@ -1,7 +1,7 @@
 # 0010 — VM Redesign and Embedded Self-Host Binary
 
 - **Status**: draft
-- **Date**: 2026-06-03
+- **Proposed**: 2026-06-03
 
 ## Context
 
