@@ -1,7 +1,8 @@
 # 0011 — Module System Redesign
 
-- **Status**: accepted
+- **Status**: implemented
 - **Proposed**: 2026-06-03
+- **Completed**: 2026-06-04
 
 ## Context
 

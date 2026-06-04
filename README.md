@@ -51,4 +51,4 @@ draft → accepted → implemented
 | 0008 | [KBC bytecode format evolution](0008-kbc-format-evolution.md) | implemented | 2026-06-02 | 2026-06-03 |
 | 0009 | [Concepts landing](0009-concepts-landing.md) | implemented | 2026-06-03 | 2026-06-03 |
 | 0010 | [VM redesign and embedded self-host binary](0010-vm-redesign.md) | draft | 2026-06-03 | |
-| 0011 | [Module system redesign](0011-module-system-redesign.md) | accepted | 2026-06-03 | |
+| 0011 | [Module system redesign](0011-module-system-redesign.md) | implemented | 2026-06-03 | 2026-06-04 |
