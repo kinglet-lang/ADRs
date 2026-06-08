@@ -54,4 +54,4 @@ draft → accepted → implemented
 | 0009 | [Concepts landing](0009-concepts-landing.md) | implemented | 2026-06-03 | 2026-06-03 |
 | 0010 | [VM redesign and embedded self-host binary](0010-vm-redesign.md) | accepted | 2026-06-03 | |
 | 0011 | [Module system redesign](0011-module-system-redesign.md) | implemented | 2026-06-03 | 2026-06-04 |
-| 0012 | [Test suite redesign](0012-test-suite-redesign.md) | accepted | 2026-06-08 | |
+| 0012 | [Test suite redesign](0012-test-suite-redesign.md) | implemented | 2026-06-08 | 2026-06-08 |

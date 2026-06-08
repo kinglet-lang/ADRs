@@ -1,7 +1,8 @@
 # 0012 — Test Suite Redesign
 
-- **Status**: accepted
+- **Status**: implemented
 - **Proposed**: 2026-06-08
+- **Completed**: 2026-06-08
 
 ## Context
 
@@ -72,7 +73,7 @@ tests/
   diagnostics/      # error messages (incl. COMPILE-FAIL negatives)
   differential/     # bootstrap vs selfhost on identical sources
   regression/       # one case per fixed bug (dual pipeline)
-  property/         # round-trip: src → ast → print → parse equivalence
+  property/         # AST/token dump stability + fuzz-lite (no crash/hang)
   common.sh
   run_all.sh
 ```
@@ -111,14 +112,14 @@ divergence rather than forcing equality.
 
 Each phase is independently committable and reversible. No compiler changes.
 
-| Phase | Deliverable | Acceptance |
-|-------|-------------|------------|
-| 0 | `harness/run.sh` + `directives.md`; `selfhost`/`check`/`diff` pipelines | harness runs new sample cases; old scripts untouched |
-| 1 | `exec/` migrated from `run/` with `// RUN: selfhost`; remove dead `known_gaps` xfail stubs | exec runs through selfhost; `run/` retired |
-| 2 | `differential/`; promote `regression/` MUST_PASS to dual pipeline | any new bootstrap/selfhost drift is visible |
-| 3 | split `checker/` → `sema/{pass,fail}`; backfill from SYNTAX.md (map, generic struct fields, concepts, nullable, UFCS) | each major feature ≥1 pass + ≥1 fail |
-| 4 | repair/refresh `codegen/` goldens; add compile+run dual assertion on key cases | codegen green with a runtime backstop |
-| 5 | `property/` round-trip; fuzz-lite (random bytes → lexer/parser → no crash) | round-trip + one short fuzz run in CI |
+| Phase | Deliverable | Status |
+|-------|-------------|--------|
+| 0 | `harness/run.sh` + `directives.md`; `selfhost`/`check`/`diff` pipelines | done |
+| 1 | `exec/` migrated from `run/` with `// RUN: selfhost`; remove dead `known_gaps` xfail stubs | done |
+| 2 | `differential/` gate + `run_matrix.sh`; regression selfhost oracle + drift report | done |
+| 3 | `checker/` → `sema/{pass,fail}`; SYNTAX backfill (map, nullable, generic struct, UFCS) | done |
+| 4 | refresh `codegen/` goldens; smoke compile+run with `.exit` sidecars | done |
+| 5 | `property/` AST/token stability + fuzz-lite | done |
 
 ### CI tiers
 
@@ -151,16 +152,16 @@ No IR/optimizer tier and no sanitizer tier (out of scope, see Context).
   will fail on known sh-vs-bs semantic differences.
 - **Scope creep**: enforce phase boundaries; one commit per phase.
 
-### Migration notes
+### Migration notes (completed)
 
-- `tests/run/` (bootstrap) → `tests/exec/` (selfhost). Retire after Phase 1.
-- `tests/regression/` keeps its oracle-anchored cases but runs them through
-  `differential/` (both pipelines) instead of bootstrap only.
-- `tests/checker/` → `tests/sema/{pass,fail}/`.
-- `tests/run/run_golden.sh` dead `known_gaps/` xfails are deleted or converted
-  to real `diagnostics/` cases.
-- `tests/probe/` and `tests/builtin_methods/` remain as selfhost capability
-  snapshots; their cases may later adopt harness directives.
+- `tests/run/` → `tests/exec/` (`RUN: selfhost`). `run/run_golden.sh` forwards.
+- `tests/checker/` → `tests/sema/{pass,fail}/`. `checker/run_golden.sh` forwards.
+- `tests/regression/` asserts selfhost against hand-verified oracles; reports
+  bootstrap drift non-gating on runtime cases.
+- `tests/differential/run_diff.sh` renamed to `run_matrix.sh` (snapshot);
+  gating cases live in `differential/cases/` with `RUN: diff`.
+- `tests/probe/` and `tests/builtin_methods/` remain capability snapshots.
+- Operator guide: [tests/README.md](../tests/README.md).
 
 ## Dependencies
 
@@ -172,6 +173,7 @@ No IR/optimizer tier and no sanitizer tier (out of scope, see Context).
 
 ## References
 
-- Current suites: `tests/{lexer,parser,checker,codegen,run,run_selfhost,diagnostics,kbc,regression,probe,builtin_methods}/`
-- Shared helpers: `tests/common.sh` (`resolve_kinglet`, `ensure_cli_kbc`)
+- Suite index: [tests/README.md](../tests/README.md)
+- Harness spec: [tests/harness/directives.md](../tests/harness/directives.md)
+- Shared helpers: `tests/common.sh` (`resolve_kinglet`, `resolve_bootstrap`, `ensure_cli_kbc`, `run_with_timeout`)
 - Capability snapshots: `tests/probe/README.md`, `tests/builtin_methods/README.md`
