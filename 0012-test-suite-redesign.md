@@ -104,9 +104,9 @@ Cases carry directives in header comments; `harness/run.sh` parses them.
 | `bytecode` | `kbc --bytecode <f>` | golden text |
 | `ast` | `kbc --ast <f>` | `CHECK` substrings |
 
-Where bootstrap and selfhost legitimately differ (e.g. `?:` vs `??`, see
-[0006](0006-error-handling-unification.md)), the `diff` case marks the expected
-divergence rather than forcing equality.
+Bootstrap follows selfhost for `?:` (null Elvis). `??` remains bootstrap-only for
+Result/cast propagation ([0006](0006-error-handling-unification.md)). `diff`
+cases expect behavioral equality unless explicitly marked otherwise.
 
 ### Phased rollout
 
