@@ -32,7 +32,7 @@ phases to [0014](0014-compilation-toolchain-architecture.md) milestones.
 ### D1 — LLVM is the native backend for the Ref compiler
 
 1. The first LLVM implementation lives in the **C++ reference compiler**
-   (bootstrap tree: `sentomk/kinglet`, mirrored in CI as `bootstrap/`).
+   (bootstrap tree: `kinglet-lang/bootstrap`, mirrored in CI as `bootstrap/`).
 2. Lowering is **KIR → LLVM IR → object file → link**, not AST → LLVM directly.
 3. A self-host `codegen/llvm.kl` module is **out of scope** until the C++ backend
    passes toolchain and regression tests. Shadow parity for native output is not
@@ -155,7 +155,7 @@ remain an internal fallback for debugging (`--emit=c`).
 ## Commit sequence (solo developer)
 
 Granularity below is **one logical commit each**. Prefix `[sh]` = this repo
-(`kinglet-self`); `[bs]` = bootstrap C++ compiler (`sentomk/kinglet`). Run
+(`kinglet-self`); `[bs]` = bootstrap C++ compiler (`kinglet-lang/bootstrap`). Run
 `tests/run_all.sh` at checkpoints unless noted.
 
 ### M0 — Klos and build wrapper

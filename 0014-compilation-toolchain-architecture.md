@@ -32,7 +32,7 @@ compiler relates to the C++ reference implementation.
 
 | Term | Meaning |
 |------|---------|
-| **Ref compiler** | C++ bootstrap implementation (`sentomk/kinglet` / `KINGLET_BOOTSTRAP`). Authoritative for day-to-day builds. |
+| **Ref compiler** | C++ bootstrap implementation (`kinglet-lang/bootstrap` / `KINGLET_BOOTSTRAP`). Authoritative for day-to-day builds. |
 | **Shadow compiler** | Kinglet sources under `core/`, `parser/`, `compiler/`, `checker/`, `lexer/`, executed on the VM via `compiler.kbc`. Used for correctness validation, not default builds. |
 | **KIR** | Kinglet IR — typed CFG between the type checker and backends ([0005](0005-backend-architecture.md)). |
 | **Klos** | Kinglet object store — content-addressed cache under `.kinglet/objects/`. |
