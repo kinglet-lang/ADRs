@@ -155,6 +155,13 @@ Commands (target interface):
 | `kinglet prove` | Shadow compile + compare to Ref (KIR and/or kbc per CI tier) |
 | `kinglet debug emit-kbc <out> <src>` | Explicit kbc emission for tests |
 
+`klet` is an optional **CLI alias** for the same driver binary (`klet build` ≡
+`kinglet build`). Canonical product and documentation name remains **Kinglet**;
+manifest and cache paths stay `kinglet.toml` and `.kinglet/`. Do not introduce
+`klet.toml`, `.klet/`, or a separate `klet` package manager. Install may ship
+`klet` as a symlink or duplicate argv0 to `kinglet` (same subcommands). Avoid
+`kl` as a command alias — it collides mentally with the `.kl` source extension.
+
 `tests/common.sh` migrates from `ensure_cli_kbc` to `ensure_build_stamp` for
 suites that only need a fresh compiler artefact; Shadow-only suites keep
 `compiler.kbc` generation behind prove or a dedicated helper.
