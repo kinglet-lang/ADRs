@@ -1,7 +1,8 @@
 # 0005 — Backend Architecture: KIR + Dual Backend
 
-- **Status**: draft
+- **Status**: accepted
 - **Proposed**: 2026-05-31
+- **Completed**: 2026-06-09
 
 Toolchain placement (Ref vs Shadow, Klos, kbc as VM-only output) is defined in
 [0014](0014-compilation-toolchain-architecture.md). This document specifies KIR

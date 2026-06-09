@@ -47,7 +47,7 @@ draft → accepted → implemented
 | 0002 | [Design principles](0002-design-principles.md) | implemented | 2026-05-21 | 2026-05-25 |
 | 0003 | [Standard library roadmap](0003-stdlib-roadmap.md) | draft | 2026-05-29 | |
 | 0004 | [LSP roadmap](0004-lsp-roadmap.md) | deferred | 2026-05-30 | |
-| 0005 | [Backend architecture: KIR + dual backend](0005-backend-architecture.md) | draft | 2026-05-31 | |
+| 0005 | [Backend architecture: KIR + dual backend](0005-backend-architecture.md) | accepted | 2026-05-31 | 2026-06-09 |
 | 0006 | [Error handling: ??, try, and Cast unification](0006-error-handling-unification.md) | implemented | 2026-06-01 | 2026-06-02 |
 | 0007 | [Trait system redesign](0007-trait-system-redesign.md) | superseded-by [0009](0009-concepts-landing.md) | 2026-06-02 | |
 | 0008 | [KBC bytecode format evolution](0008-kbc-format-evolution.md) | implemented | 2026-06-02 | 2026-06-03 |
