@@ -3,6 +3,10 @@
 - **Status**: draft
 - **Proposed**: 2026-05-31
 
+Toolchain placement (Ref vs Shadow, Klos, kbc as VM-only output) is defined in
+[0014](0014-compilation-toolchain-architecture.md). This document specifies KIR
+shape and backend contracts.
+
 ## Context
 
 The self-host compiler currently emits bytecode directly from AST. If an LLVM (or WASM, Cranelift, etc.) backend is added later, it must either reuse the AST→bytecode logic (lossy) or re-walk the AST independently (duplication). A shared IR between frontend and backends avoids both problems.
@@ -74,7 +78,9 @@ fn describe(c: Color) -> int {
 3. Self-host `ir/` module: `ir.kl` (data definitions), `ir_emit.kl` (AST + types → KIR), `ir_print.kl` for `--ir` dump.
 4. Self-host VM backend: `codegen/vm.kl`. Golden tests diff bytecode against C++ VM backend.
 5. Bootstrap fixpoint test: bootstrap-built vs self-built compiler produce byte-identical bytecode.
-6. LLVM backend (`codegen/llvm.kl`) — only after everything above is green.
+6. LLVM backend — C++ `KIR → LLVM` in the Ref compiler; phased L0–L5 per
+   [0015](0015-llvm-backend-roadmap.md). Self-host `codegen/llvm.kl` is deferred
+   until the C++ backend passes exec smoke tests.
 
 ## Open questions
 

@@ -1,7 +1,8 @@
 # 0010 — VM Redesign and Embedded Self-Host Binary
 
-- **Status**: accepted
+- **Status**: implemented (Part 1); Part 2 deferred — superseded by [0014](0014-compilation-toolchain-architecture.md) D6
 - **Proposed**: 2026-06-03
+- **Completed**: 2026-06-08 (Part 1 — `backend/vm` RC/COW value model)
 
 ## Context
 
@@ -16,6 +17,9 @@ Additionally, the self-host compiler (`cli.kbc`) currently requires manual invoc
 ## Decision
 
 ### Part 1 — VM Value Representation Redesign
+
+- **Status**: implemented
+- **Files**: `backend/vm/value.h`, `value.cc`, `cow.h`, `cow.cc`, `vm.cc`
 
 Replace the deep-copy value model with reference-counted heap objects:
 
@@ -32,6 +36,13 @@ Key properties:
 - **Thread-unsafe RC is acceptable** — the VM is single-threaded. Atomic refcounts are unnecessary overhead.
 
 ### Part 2 — Embedded cli.kbc Binary
+
+- **Status**: deferred — superseded by [0014](0014-compilation-toolchain-architecture.md) D6
+- **Reason**: Toolchain embedding targets a native compiler artefact or Klos object,
+  not `compiler.kbc`. Optional kbc embedding may still apply to **user programs**;
+  see 0014.
+
+The original proposal is retained below for reference.
 
 Bundle `cli.kbc` as a compiled-in resource within the `kinglet` binary:
 
@@ -53,14 +64,24 @@ Prerequisite: Part 1 must land first, since the embedded compiler needs to handl
 
 ## Consequences
 
-- VM stack operations become O(1) regardless of value complexity.
-- Self-host compiler can process arbitrary .kl programs (unblocks struct literal parsing).
-- Memory usage may increase slightly due to HeapObj headers (16 bytes per object for tag + refcount).
-- `Value` size shrinks from ~72 bytes (current, with inline vector) to ~16 bytes (tag + pointer/immediate).
-- Bytecode format unchanged — this is a VM-internal change, not a .kbc format change.
-- Benchmark target: self-host compiler compiling itself should complete in < 10s (current: hangs on struct literals; theoretical floor with RC: ~2-5s based on Python-equivalent interpretation speed).
+### Part 1 (landed)
+
+- VM stack operations are O(1) pointer copies for heap-backed values.
+- Self-host compiler can process programs with struct literals without deep-copy blowup.
+- Memory usage may increase slightly due to HeapObj headers (tag + refcount).
+- `Value` holds immediates or `RcPtr<HeapObj>` instead of inline `vector<Value>`.
+- Bytecode format unchanged — VM-internal only ([0008](0008-kbc-format-evolution.md)).
+- Self-host compile time for `core/main.kl` is ~3–4s on the VM (2026-06-09); further
+  toolchain speed work is in [0014](0014-compilation-toolchain-architecture.md).
+
+### Part 2 (deferred)
+
+- Embedding scope moved to [0014](0014-compilation-toolchain-architecture.md) D6
+  (native artefact or Klos; optional user-program kbc embed).
+- `kinglet --self-host` / embedded `compiler.kbc` driver is not implemented.
 
 ## Dependencies
 
-- None (standalone infrastructure change).
-- Unblocks: embedded binary (Part 2), REPL, constexpr evaluation, sandbox execution.
+- None for Part 1 (standalone VM change).
+- Part 1 unblocks: Shadow compiler usability, REPL, constexpr evaluation, sandbox execution.
+- Part 2 follow-up: [0014](0014-compilation-toolchain-architecture.md) M0–M3 (Klos, native toolchain).

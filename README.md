@@ -52,6 +52,9 @@ draft → accepted → implemented
 | 0007 | [Trait system redesign](0007-trait-system-redesign.md) | superseded-by [0009](0009-concepts-landing.md) | 2026-06-02 | |
 | 0008 | [KBC bytecode format evolution](0008-kbc-format-evolution.md) | implemented | 2026-06-02 | 2026-06-03 |
 | 0009 | [Concepts landing](0009-concepts-landing.md) | implemented | 2026-06-03 | 2026-06-03 |
-| 0010 | [VM redesign and embedded self-host binary](0010-vm-redesign.md) | accepted | 2026-06-03 | |
+| 0010 | [VM redesign and embedded self-host binary](0010-vm-redesign.md) | implemented | 2026-06-03 | 2026-06-08 |
 | 0011 | [Module system redesign](0011-module-system-redesign.md) | implemented | 2026-06-03 | 2026-06-04 |
 | 0012 | [Test suite redesign](0012-test-suite-redesign.md) | implemented | 2026-06-08 | 2026-06-08 |
+| 0013 | [Bootstrap bytecode parity](0013-bootstrap-bytecode-delta.md) | accepted | 2026-06-08 | 2026-06-09 |
+| 0014 | [Compilation toolchain architecture](0014-compilation-toolchain-architecture.md) | accepted | 2026-06-09 | |
+| 0015 | [LLVM backend roadmap](0015-llvm-backend-roadmap.md) | accepted | 2026-06-09 | |
