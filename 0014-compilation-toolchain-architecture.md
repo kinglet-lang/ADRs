@@ -188,6 +188,12 @@ the compiler driver. COW / RC work in 0010 Part 1 stays valid for VM execution.
 | **M3** | Native backend for toolchain root ([0015](0015-llvm-backend-roadmap.md) L4–L5) | `core/main.kl` builds to native via LLVM without kbc on the hot path |
 | **M4** | Per-module stamps + link | Incremental rebuild of compiler modules |
 
+**Status (2026-06-10)**: M0–M3 complete. `kinglet build` defaults to the native
+backend and emits `.kinglet/out/compiler`; the native driver passes
+`tests/native/run_driver_smoke.sh` without `compiler.kbc` on the hot path.
+Test suites keep building `compiler.kbc` via `--backend vm` for VM parity. M4
+is not started.
+
 Phases may overlap; M0 does not require KIR to land first. LLVM phases L0–L5 are
 defined in [0015](0015-llvm-backend-roadmap.md); L0 starts once a minimal KIR C++
 representation exists (late M1). Solo-developer **commit-level** breakdown is in

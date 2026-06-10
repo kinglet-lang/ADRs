@@ -366,6 +366,9 @@ Granularity below is **one logical commit each**. Prefix `[sh]` = this repo
 | L5-3 | `[sh] docs: mark 0014 M3 complete; native dev workflow` | sh |
 
 **Checkpoint**: `kinglet build && ./.kinglet/out/...` runs without `compiler.kbc`.
+**Reached 2026-06-10** — L4–L5 landed: native `kinglet build` default, driver
+smoke green, `-g` DWARF, optional embedded self-host compiler
+(`kinglet selfhost`). See [docs/native.md](../docs/native.md).
 
 ### M4 — Incremental (after M3)
 
