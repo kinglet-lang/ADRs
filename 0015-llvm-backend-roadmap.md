@@ -109,7 +109,44 @@ L0 may start in parallel with late M1 once a minimal KIR dump + C++ struct exist
 4. **Debug info** — optional `DWARF` from KIR line tables; not required for L0–L2.
 5. **WASM / other backends** — not scheduled; KIR seam allows them later.
 
-### D6 — Testing strategy
+Coverage may trail the VM while a phase is in flight; **numeric semantics must not**.
+Missing opcodes or runtime helpers are temporary scope gaps, not an excuse to accept
+behavioural drift on values the backend already claims to support.
+
+### D6 — Numeric semantics parity (non-negotiable)
+
+Native and VM must agree on every numeric value the native path can produce. Kinglet
+`int` is 64-bit signed integer arithmetic; `float` is IEEE 754 `double` ([0010](0010-vm-redesign.md)).
+The native backend may omit features until they are implemented, but **must not**
+silently narrow, truncate, or reinterpret numbers relative to the VM for supported
+constructs.
+
+| Construct | VM reference | Native requirement |
+|-----------|----------------|-------------------|
+| `int` literals and arithmetic | `int64_t`, exact integer ops | Full 64-bit range; no silent `i32` narrowing in KIR or lowering |
+| `float` literals and arithmetic | `double`, IEEE 754 | Same `double` semantics once native float is enabled |
+| `int::bits(float)` / `float::from_bits` | Bit-exact reinterpret | Same bit patterns as VM |
+| `main` exit code | `exit_code_from_value` rules | Match VM mapping (not ad-hoc truncation) |
+| Heap vs integer wire format | Tagged handles separate from numbers | Negative integers and heap refs must remain distinguishable for all RT entry points |
+
+**Gate:** before expanding the native smoke manifest for a numeric feature, add a
+regression case that would fail on any precision or range mismatch. Native parity
+debt is repaired in dedicated follow-up work; it is not deferred indefinitely.
+
+**Current parity debt** (bootstrap; repair before claiming broader native support):
+
+1. KIR `ConstInt` operands are `int32_t` while VM constants are `int64_t` — literals
+   outside `i32` range can diverge.
+2. `float` / `double` KIR ops are not lowered — acceptable only while float cases stay
+   off the native manifest; enabling them requires full IEEE parity first.
+3. Tagged `i64` heap handles: any negative `int` sets bit 63 in two's complement;
+   RT helpers that test `kl_is_heap` on arbitrary values must not misclassify integers.
+4. `EnumVariant` stub returns a plain integer — enum cases stay off the native manifest
+   until enum wire format matches VM.
+5. `exit_code_from_value` clamp (0–255) vs native `i64`→`i32` trunc — align before
+   exit-code edge cases enter the manifest.
+
+### D7 — Testing strategy
 
 | Layer | Test |
 |-------|------|
@@ -120,7 +157,7 @@ L0 may start in parallel with late M1 once a minimal KIR dump + C++ struct exist
 
 Add `tests/native/run_smoke.sh` and `NATIVE_MANIFEST` listing cases enabled per phase.
 
-### D7 — Resolve [0014](0014-compilation-toolchain-architecture.md) open question #2
+### D8 — Resolve [0014](0014-compilation-toolchain-architecture.md) open question #2
 
 Native backend technology: **LLVM via C++ Ref compiler**, with `libkinglet_rt`.
 Alternatives (direct machine code, emit-C only) are rejected for M3; emit-C may
@@ -128,8 +165,8 @@ remain an internal fallback for debugging (`--emit=c`).
 
 ## Open questions
 
-1. **RC in native RT** — full refcount matching VM from L2, or copy semantics with
-   eager free until L5?
+1. **RC in native RT** — full refcount matching VM from aggregate RT landing, or copy
+   semantics with eager free until optimisation phase?
 2. **Link model** — always static link `libkinglet_rt`, or dynamic `.so` for dev?
 3. **Monomorphization** — confirm all before KIR ([0005](0005-backend-architecture.md) OQ #1).
 4. **Cross-repo layout** — LLVM backend only in bootstrap, or mirror `backend/llvm/`
