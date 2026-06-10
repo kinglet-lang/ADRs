@@ -115,16 +115,16 @@ behavioural drift on values the backend already claims to support.
 
 ### D6 — Numeric semantics parity (non-negotiable)
 
-Native and VM must agree on every numeric value the native path can produce. Kinglet
-`int` is 64-bit signed integer arithmetic; `float` is IEEE 754 `double` ([0010](0010-vm-redesign.md)).
-The native backend may omit features until they are implemented, but **must not**
+Native and VM must agree on every numeric value the native path can produce. The
+native backend may omit features until they are implemented, but **must not**
 silently narrow, truncate, or reinterpret numbers relative to the VM for supported
-constructs.
+constructs. Concrete widths and aliases are fixed in **D7** below.
 
 | Construct | VM reference | Native requirement |
 |-----------|----------------|-------------------|
-| `int` literals and arithmetic | `int64_t`, exact integer ops | Full 64-bit range; no silent `i32` narrowing in KIR or lowering |
-| `float` literals and arithmetic | `double`, IEEE 754 | Same `double` semantics once native float is enabled |
+| `int` / `int64` literals and arithmetic | `int64_t`, exact integer ops | Full 64-bit range; no silent `i32` narrowing in KIR or lowering |
+| `int32` literals and arithmetic | `int32_t`, exact integer ops | Same 32-bit range and wrap semantics once enabled in KIR |
+| `float32` / `float64` literals and arithmetic | IEEE 754 `float` / `double` | Same width and rounding once native float is enabled |
 | `int::bits(float)` / `float::from_bits` | Bit-exact reinterpret | Same bit patterns as VM |
 | `main` exit code | `exit_code_from_value` rules | Match VM mapping (not ad-hoc truncation) |
 | Heap vs integer wire format | Tagged handles separate from numbers | Negative integers and heap refs must remain distinguishable for all RT entry points |
@@ -146,7 +146,74 @@ debt is repaired in dedicated follow-up work; it is not deferred indefinitely.
 5. `exit_code_from_value` clamp (0–255) vs native `i64`→`i32` trunc — align before
    exit-code edge cases enter the manifest.
 
-### D7 — Testing strategy
+### D7 — Fixed-width numeric types
+
+Kinglet adopts **explicit fixed-width types** as the semantic contract; shorthand
+names are **aliases with fixed meaning on every target**, including 32-bit hosts.
+
+#### Width table and aliases
+
+| Canonical type | Alias | Representation |
+|----------------|-------|----------------|
+| `int8` … `int64`, `uint8` … `uint64` | — | Two's-complement, width as named |
+| `int64` | **`int`** | 64-bit signed integer on **all** platforms |
+| `float32` | **`float`** | IEEE 754 binary32 |
+| `float64` | **`double`** | IEEE 754 binary64 |
+| `int8` | **`char`** (character literals) | 8-bit code unit |
+
+`int` is **not** platform-dependent (contrast Go/C where `int` follows word size).
+On a 32-bit CPU, `int` remains 64-bit; the backend lowers it as `i64`. This trades
+some micro-architectural efficiency on 32-bit targets for **one semantics everywhere**:
+the same source, manifest cases, and VM/native oracle hold on any triple.
+
+#### Low-level access is not removed
+
+Defaulting `int` to 64-bit does **not** erase systems programming capability.
+Callers choose narrower types explicitly when they need register-sized arithmetic,
+struct layout control, or foreign ABI widths:
+
+```kl
+int32 index = 0;
+uint8 byte = 0xFF;
+float32 sample = 0.0f32;
+```
+
+Narrow types are first-class in the type checker, KIR, and native lowering — not
+secondary casts off a single machine `int`.
+
+#### Conversion and mixed-width rules
+
+1. **No silent narrowing** — `int64` → `int32` (and any wider → narrower) requires
+   an explicit cast; the checker rejects implicit truncation.
+2. **Mixed integer widths** — no automatic promotion across `int32` / `int64` in one
+   expression; the programmer widens explicitly (or the checker inserts a documented
+   rule later — default is **reject**).
+3. **Mixed float widths** — `float32` with `float64` may promote to `float64` under
+   one documented rule; never silently narrows to `float32`.
+4. **Integer ↔ float** — requires explicit cast; no C-style usual arithmetic conversions.
+
+Literals: integers within `int32` range default to `int32` type; wider literals are
+`int64`. Suffixes (`42i32`, `42i64`, `1.0f32`, `1.0f64`) override. Assigning a
+narrower literal to a wider variable is an explicit widening assignment (allowed).
+
+#### Implementation schedule
+
+Full fixed-width surface syntax and KIR opcodes (`ConstI32`, `IAdd64`, `FAdd32`, …)
+trail the policy above. Until landed:
+
+- VM continues to store alias `int` as `int64_t` ([0010](0010-vm-redesign.md)).
+- Parity debt in D6 (e.g. KIR `ConstInt` as `i32`) is repaired as part of this work.
+- Native manifest expands per width only after parity cases exist for that width.
+
+#### Rationale
+
+| Alternative | Why rejected |
+|-------------|--------------|
+| `int` = 32-bit on 32-bit hosts | Same program behaves differently by target; breaks VM/native parity gates |
+| Only `int` / `float`, no widths | Hides precision in the implementation (current `ConstInt` / tagged `i64` debt) |
+| `int` = pointer width | Couples numeric semantics to ABI; poor fit for a portable language VM |
+
+### D8 — Testing strategy
 
 | Layer | Test |
 |-------|------|
@@ -157,7 +224,7 @@ debt is repaired in dedicated follow-up work; it is not deferred indefinitely.
 
 Add `tests/native/run_smoke.sh` and `NATIVE_MANIFEST` listing cases enabled per phase.
 
-### D8 — Resolve [0014](0014-compilation-toolchain-architecture.md) open question #2
+### D9 — Resolve [0014](0014-compilation-toolchain-architecture.md) open question #2
 
 Native backend technology: **LLVM via C++ Ref compiler**, with `libkinglet_rt`.
 Alternatives (direct machine code, emit-C only) are rejected for M3; emit-C may
@@ -175,6 +242,8 @@ remain an internal fallback for debugging (`--emit=c`).
 
 ## Consequences
 
+- Fixed-width types (D7) require checker, KIR, VM, and LLVM changes; alias `int` =
+  `int64` is policy-locked before the surface syntax fully lands.
 - M3 timeline is bounded by L0–L4; KIR work (M1) becomes the gating priority.
 - Bootstrap repo gains `ir/`, `codegen/llvm/`, `runtime/`; self repo documents and
   tests against released bootstrap binaries.
