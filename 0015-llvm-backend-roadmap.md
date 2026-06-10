@@ -52,7 +52,7 @@ Native code assumes a small **C ABI runtime** linked into every executable:
 | Stack / locals | LLVM `alloca` in entry block; no GC |
 | Strings | Heap-allocated buffer + length (match VM `HeapString` layout where practical) |
 | Arrays, structs, enums, maps | Opaque handles or struct layouts generated per type; RC matching [0010](0010-vm-redesign.md) semantics |
-| Errors (`try` / `??`) | Lower to tagged union or errno-style slot; align with [0006](0006-error-handling-unification.md) |
+| Errors (`try` / `?:`) | Lower to tagged union or errno-style slot; align with [0006](0006-error-handling-unification.md) |
 | Panic / unreachable | `kinglet_rt_abort(msg)` — process exit with non-zero status |
 | Native I/O (`io`, `fs`, `sys`) | Calls into `libkinglet_rt` or platform libc wrappers |
 
@@ -81,8 +81,8 @@ KIR landing (M1) is a hard prerequisite for L1+.
 |-------|--------|------------|----------------|
 | **L0** | Spike: KIR constant fn → LLVM → run | — | `just42.kl` prints correct value via native binary |
 | **L1** | Integer ops, control flow, calls, `main` | M1 KIR + ir_builder split | `tests/exec/` subset green on native |
-| **L2** | Strings, arrays, structs, enums | L1 + `libkinglet_rt` | `struct_basic`, `array_basic` exec tests |
-| **L3** | `try`/`??`, match lowering, module link | L2 | `tests/regression/` subset green |
+| **L2** | Strings, arrays, structs, enums | L1 + `libkinglet_rt` | Native smoke 11/11 green (see `tests/native/manifest.txt`) |
+| **L3** | `try`/`?:`, error propagation, module link | L2 | `tests/regression/` subset green |
 | **L4** | Natives (`io`/`fs`/`sys`), link `core/main.kl` | L3 + M0 Klos | `kinglet build` produces native toolchain binary |
 | **L5** | Optimisation, cross-target, embed in driver | L4 | [0014](0014-compilation-toolchain-architecture.md) M3 complete |
 
@@ -133,18 +133,17 @@ constructs. Concrete widths and aliases are fixed in **D7** below.
 regression case that would fail on any precision or range mismatch. Native parity
 debt is repaired in dedicated follow-up work; it is not deferred indefinitely.
 
-**Current parity debt** (bootstrap; repair before claiming broader native support):
+**Parity status** (bootstrap; updated when native smoke manifest is green):
 
-1. KIR `ConstInt` operands are `int32_t` while VM constants are `int64_t` — literals
-   outside `i32` range can diverge.
-2. `float` / `double` KIR ops are not lowered — acceptable only while float cases stay
-   off the native manifest; enabling them requires full IEEE parity first.
-3. Tagged `i64` heap handles: any negative `int` sets bit 63 in two's complement;
-   RT helpers that test `kl_is_heap` on arbitrary values must not misclassify integers.
-4. `EnumVariant` stub returns a plain integer — enum cases stay off the native manifest
-   until enum wire format matches VM.
-5. `exit_code_from_value` clamp (0–255) vs native `i64`→`i32` trunc — align before
-   exit-code edge cases enter the manifest.
+| Item | Status |
+|------|--------|
+| KIR `ConstInt` as full `int64` (low/high operands) | **Resolved** — `big_int` smoke |
+| Heap vs integer wire format (`0xFFFE<<48` heap mark) | **Resolved** — negative ints no longer collide with heap tag |
+| Inline enum wire + `kl_value_eq` | **Resolved** — `enum_no_payload`, `match_enum_simple` smoke |
+| `main` exit code via `kl_exit_code` (0–255 clamp) | **Resolved** — matches VM `exit_code_from_value` |
+| `float` / `double` KIR ops | **Open** — not lowered; keep float cases off native manifest until IEEE parity lands |
+| Enum payload / guarded match | **Open** — simple no-payload `match` only; payload destructuring not yet implemented |
+| `try` / `?:` error propagation | **Open** — not yet implemented |
 
 ### D7 — Fixed-width numeric types
 
@@ -202,7 +201,7 @@ Full fixed-width surface syntax and KIR opcodes (`ConstI32`, `IAdd64`, `FAdd32`,
 trail the policy above. Until landed:
 
 - VM continues to store alias `int` as `int64_t` ([0010](0010-vm-redesign.md)).
-- Parity debt in D6 (e.g. KIR `ConstInt` as `i32`) is repaired as part of this work.
+- Remaining parity gaps are listed in D6; integer and enum wire debt is cleared for the current native smoke manifest.
 - Native manifest expands per width only after parity cases exist for that width.
 
 #### Rationale
@@ -345,8 +344,8 @@ Granularity below is **one logical commit each**. Prefix `[sh]` = this repo
 
 | # | Commit | Repo |
 |---|--------|------|
-| L3-1 | `[bs] feat(rt): try/?? lowering helpers (tagged result)` | bs |
-| L3-2 | `[bs] feat(llvm): lower match/switch and error propagation` | bs |
+| L3-1 | `[bs] feat(rt): try/?: lowering helpers (tagged result)` | bs |
+| L3-2 | `[bs] feat(llvm): lower error propagation; complete match (payload, guards)` | bs |
 | L3-3 | `[bs] feat(llvm): emit per-module objects; link step` | bs |
 | L3-4 | `[sh] test(native): enable L3 regression manifest cases` | sh |
 
