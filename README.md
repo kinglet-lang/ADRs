@@ -56,5 +56,6 @@ draft → accepted → implemented
 | 0011 | [Module system redesign](0011-module-system-redesign.md) | implemented | 2026-06-03 | 2026-06-04 |
 | 0012 | [Test suite redesign](0012-test-suite-redesign.md) | implemented | 2026-06-08 | 2026-06-08 |
 | 0013 | [Bootstrap bytecode parity](0013-bootstrap-bytecode-delta.md) | accepted | 2026-06-08 | 2026-06-09 |
-| 0014 | [Compilation toolchain architecture](0014-compilation-toolchain-architecture.md) | accepted | 2026-06-09 | |
-| 0015 | [LLVM backend roadmap](0015-llvm-backend-roadmap.md) | accepted | 2026-06-09 | |
+| 0014 | [Compilation toolchain architecture](0014-compilation-toolchain-architecture.md) | implemented | 2026-06-09 | 2026-06-10 |
+| 0015 | [LLVM backend roadmap](0015-llvm-backend-roadmap.md) | implemented | 2026-06-09 | 2026-06-10 |
+| 0016 | [Typed KIR for native lowering](0016-typed-kir.md) | implemented (phase 1) | 2026-06-10 | 2026-06-10 |

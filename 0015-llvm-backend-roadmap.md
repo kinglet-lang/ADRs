@@ -1,7 +1,8 @@
 # 0015 — LLVM Backend Roadmap
 
-- **Status**: accepted
+- **Status**: implemented
 - **Proposed**: 2026-06-09
+- **Completed**: 2026-06-10
 
 ## Context
 
@@ -81,7 +82,7 @@ KIR landing (M1) is a hard prerequisite for L1+.
 |-------|--------|------------|----------------|
 | **L0** | Spike: KIR constant fn → LLVM → run | — | `just42.kl` prints correct value via native binary |
 | **L1** | Integer ops, control flow, calls, `main` | M1 KIR + ir_builder split | `tests/exec/` subset green on native |
-| **L2** | Strings, arrays, structs, enums | L1 + `libkinglet_rt` | Native smoke 11/11 green (see `tests/native/manifest.txt`) |
+| **L2** | Strings, arrays, structs, enums | L1 + `libkinglet_rt` | Native smoke L2 tier green (see `tests/native/manifest.txt`) |
 | **L3** | `try`/`?:`, error propagation, module link | L2 | `tests/regression/` subset green |
 | **L4** | Natives (`io`/`fs`/`sys`), link `core/main.kl` | L3 + M0 Klos | `kinglet build` produces native toolchain binary |
 | **L5** | Optimisation, cross-target, embed in driver | L4 | [0014](0014-compilation-toolchain-architecture.md) M3 complete |
@@ -133,17 +134,23 @@ constructs. Concrete widths and aliases are fixed in **D7** below.
 regression case that would fail on any precision or range mismatch. Native parity
 debt is repaired in dedicated follow-up work; it is not deferred indefinitely.
 
-**Parity status** (bootstrap; updated when native smoke manifest is green):
+**Parity status** (bootstrap; `tests/native/manifest.txt`, 2026-06-10):
 
 | Item | Status |
 |------|--------|
-| KIR `ConstInt` as full `int64` (low/high operands) | **Resolved** — `big_int` smoke |
-| Heap vs integer wire format (`0xFFFE<<48` heap mark) | **Resolved** — negative ints no longer collide with heap tag |
-| Inline enum wire + `kl_value_eq` | **Resolved** — `enum_no_payload`, `match_enum_simple` smoke |
-| `main` exit code via `kl_exit_code` (0–255 clamp) | **Resolved** — matches VM `exit_code_from_value` |
-| `float` / `double` KIR ops | **Open** — not lowered; keep float cases off native manifest until IEEE parity lands |
-| Enum payload / guarded match | **Open** — simple no-payload `match` only; payload destructuring not yet implemented |
-| `try` / `?:` error propagation | **Open** — not yet implemented |
+| KIR `ConstInt` as full `int64` (low/high operands) | **Resolved** — `big_int`, `int64_high` |
+| Heap vs integer wire format (`0xFFFE<<48` heap mark) | **Resolved** |
+| Inline enum wire + `kl_value_eq` | **Resolved** — `enum_no_payload`, `match_enum_simple` |
+| `main` exit code via `kl_exit_code` (0–255 clamp) | **Resolved** |
+| `float` / `double` KIR ops | **Resolved** — `float_arith`, `float_cmp`; typed lowering per [0016](0016-typed-kir.md) |
+| Enum payload / guarded match | **Resolved** — `match_option_payload`, `enum_guard`, `match_int_lit` |
+| `try` / `?:` error propagation | **Resolved** — `try_ok`, `try_propagate`, `elvis_null`, `cast_catch` |
+| Map / array-string methods / bitwise | **Resolved** — `map_ops`, `array_methods`, `str_methods`, `bit_ops` |
+| `io` / `fs` / `sys` natives | **Resolved** — `io_line`, `fs_roundtrip`, `sys_args_len` |
+| Multi-module `import` link | **Resolved** — `import_add` |
+| Scalar `string(bool)` / `string(null)` | **Resolved** — `bool_null_print` ([0016](0016-typed-kir.md)) |
+| Generic `io` format / `+` on bool wire | **Open** — see [0016](0016-typed-kir.md) phase 2 |
+| Fixed-width surface types (D7) | **Open** — policy locked; implementation deferred to V0 |
 
 ### D7 — Fixed-width numeric types
 
@@ -218,7 +225,7 @@ trail the policy above. Until landed:
 |-------|------|
 | L0–L1 | `tests/exec/cases/*` selected via `native-smoke` manifest |
 | L2+ | Expand manifest; compare stdout/stderr/exit code with VM |
-| Toolchain | L4: native `kinglet --version` or equivalent smoke |
+| Toolchain | L4: `run_driver_smoke.sh` — native `compiler --check` after `kinglet build` |
 | Regression | Native does not replace bytecode goldens; both pipelines run in CI tier |
 
 Add `tests/native/run_smoke.sh` and `NATIVE_MANIFEST` listing cases enabled per phase.
@@ -229,15 +236,15 @@ Native backend technology: **LLVM via C++ Ref compiler**, with `libkinglet_rt`.
 Alternatives (direct machine code, emit-C only) are rejected for M3; emit-C may
 remain an internal fallback for debugging (`--emit=c`).
 
-## Open questions
+## Open questions (resolutions)
 
-1. **RC in native RT** — full refcount matching VM from aggregate RT landing, or copy
-   semantics with eager free until optimisation phase?
-2. **Link model** — always static link `libkinglet_rt`, or dynamic `.so` for dev?
-3. **Monomorphization** — confirm all before KIR ([0005](0005-backend-architecture.md) OQ #1).
-4. **Cross-repo layout** — LLVM backend only in bootstrap, or mirror `backend/llvm/`
-   in self repo for VM/LLVM shared tests?
-5. **LLVM version pin** — minimum LLVM 16 vs 18 for CI and dev docs.
+1. **RC in native RT** — **Deferred**: manual `new`/`delete` for M3; full RC parity
+   with VM trails deterministic drop / scope work ([0002](0002-design-principles.md)).
+2. **Link model** — **Resolved**: static link `libkinglet_rt.a` into every native exe.
+3. **Monomorphization** — **Resolved**: before KIR emit ([0005](0005-backend-architecture.md)).
+4. **Cross-repo layout** — **Resolved**: LLVM backend lives in bootstrap only; this
+   repo tests via `KINGLET_BOOTSTRAP` and `tests/native/`.
+5. **LLVM version pin** — **Resolved**: LLVM **15+** documented in [native.md](../docs/native.md); CI uses Homebrew LLVM on macOS.
 
 ## Consequences
 
@@ -360,7 +367,7 @@ Granularity below is **one logical commit each**. Prefix `[sh]` = this repo
 | L4-3 | `[bs] feat(llvm): compile multi-module graph (imports)` | bs |
 | L4-4 | `[bs] feat(cli): native build of core/main.kl entry` | bs |
 | L4-5 | `[sh] feat(build): default native for toolchain; stamp includes rt_version` | sh |
-| L4-6 | `[sh] test: smoke native kinglet driver (--version or equiv)` | sh |
+| L4-6 | `[sh] test: smoke native kinglet driver (`--check`)` | sh |
 | L5-1 | `[bs] feat(llvm): DWARF from KIR line tables (optional flag)` | bs |
 | L5-2 | `[bs] feat(embed): optional link native compiler into kinglet binary` | bs |
 | L5-3 | `[sh] docs: mark 0014 M3 complete; native dev workflow` | sh |
@@ -377,7 +384,7 @@ smoke green, `-g` DWARF, optional embedded self-host compiler
 | M4-1 | `[sh] feat(build): module dependency graph from imports` | sh |
 | M4-2 | `[sh] feat(build): per-module stamp and Klos object` | sh |
 | M4-3 | `[bs] feat(link): link multiple module objects into one exe` | bs |
-| M4-4 | `[sh] feat(cli): kinglet objects gc` | sh |
+| M4-4 | `[sh] feat(cli): kinglet clean` (Klos prune; **deferred to V0 CLI**) | sh |
 
 ### Suggested order for one developer
 

@@ -1,7 +1,8 @@
 # 0014 — Compilation Toolchain Architecture
 
-- **Status**: accepted
+- **Status**: implemented
 - **Proposed**: 2026-06-09
+- **Completed**: 2026-06-10
 
 ## Context
 
@@ -107,10 +108,12 @@ Each object records metadata (kind, size, producer, stamp) in a sidecar
 
 | Kind | Description |
 |------|-------------|
-| `kir` | Serialized KIR dump (optional; may be omitted if only in-memory) |
 | `kbc` | VM bytecode |
 | `native` | Executable or linkable object |
-| `proof` | Prove-run log / pass marker |
+
+Kinds `kir` and `proof` (serialized KIR, prove-run markers) are **deferred** —
+M0–M4 use `kbc` and `native` only. KIR remains in-memory; prove status is tracked
+by CI jobs, not Klos blobs.
 
 **Stamp** computation:
 
@@ -202,17 +205,45 @@ defined in [0015](0015-llvm-backend-roadmap.md); L0 starts once a minimal KIR C+
 representation exists (late M1). Solo-developer **commit-level** breakdown is in
 0015 § Commit sequence.
 
-## Open questions
+## Open questions (resolutions)
 
-1. **KIR serialization** — binary on-disk format needed for distributed cache, or
-   text hash sufficient for M0–M2?
-2. ~~**Native backend technology**~~ — resolved by [0015](0015-llvm-backend-roadmap.md) D7 (LLVM + `libkinglet_rt`).
-3. **Shadow prove contract** — after KIR emit lands, is bytecode identity still
-   required for `core/main.kl`, or only KIR equivalence + selected runtime tests?
-4. **Cross-platform stamps** — `pass2b_ns_rank` platform sensitivity ([0013](0013-bootstrap-bytecode-delta.md))
-   may require target-specific stamp components for Shadow kbc comparison.
-5. **`kinglet init`** — deferred until minimal project template syntax is fixed
-   ([0003](0003-stdlib-roadmap.md) module layout).
+1. **KIR serialization** — **Resolved for M0–M4**: in-memory KIR + text dump
+   (`--ir`) and golden hashes are sufficient. Binary on-disk KIR for distributed
+   cache is deferred.
+2. ~~**Native backend technology**~~ — resolved by [0015](0015-llvm-backend-roadmap.md) D9 (LLVM + `libkinglet_rt`).
+3. **Shadow prove contract** — **Resolved for M0–M4**: bytecode identity for
+   `core/main.kl` remains gated ([0013](0013-bootstrap-bytecode-delta.md)).
+   KIR-level prove may supplement later; it does not replace kbc parity yet.
+4. **Cross-platform stamps** — **Known issue**: `pass2b_ns_rank` may differ by
+   libc++ map order. Shadow kbc comparison is macOS-gated; stamp may gain a
+   `target` component if multi-platform prove is required.
+5. **`kinglet init`** — **Deferred** to V0 (project template syntax in
+   [0003](0003-stdlib-roadmap.md)).
+
+## Post-0014 (V0 — out of scope for this ADR)
+
+The following D5 commands are **not** required to close 0014; they belong to the
+shipped user CLI (see project `Kinglet-TODO.md`):
+
+| Command | Notes |
+|---------|--------|
+| `kinglet run` | Run default `.kinglet/out/` artefact |
+| `kinglet init` | New project template |
+| Native `kinglet` binary | `init` / `build` / `run` only; dev tools stay Bash + bootstrap |
+
+`kinglet ir <file>` remains a **bootstrap flag** (`--ir`) on the dev path; wrapping
+it in the Bash driver is optional.
+
+### `kinglet clean` (M4-4, deferred to V0)
+
+Remove Klos blobs under `.kinglet/objects/` that no **stamp** still references.
+This is **build-cache housekeeping only** — not language/runtime GC (see
+[0002](0002-design-principles.md) deterministic destruction). Name **`kinglet clean`**
+to avoid confusion with heap collection. Implementation deferred with the V0 CLI;
+until then: `rm -rf .kinglet/objects` or selective prune by hand.
+
+`ensure_cli_kbc` in `tests/common.sh` is **intentionally retained** for Shadow/
+prove suites; fast paths use `ensure_build_stamp` as planned in M0.
 
 ## Consequences
 
@@ -224,8 +255,8 @@ representation exists (late M1). Solo-developer **commit-level** breakdown is in
 - **Test layout**: `selfhost/`, `differential/`, and `codegen/` remain; prove
   orchestration moves behind `kinglet prove` instead of implicit `ensure_cli_kbc`
   self-host rebuilds.
-- **Documentation debt**: README and `tests/common.sh` references to "~85s
-  compiler.kbc rebuild" should be updated as M0 lands.
+- **Documentation debt**: README and build docs updated for native-default
+  `kinglet build` (2026-06-10).
 - **0010 Part 2** embedding scope changes; VM embed is for user binaries, not
   the compiler driver.
 - **0005** status should move from draft → accepted once KIR form is locked in
