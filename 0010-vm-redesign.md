@@ -21,6 +21,11 @@ Additionally, the self-host compiler (`cli.kbc`) currently requires manual invoc
 - **Status**: implemented
 - **Files**: `backend/vm/value.h`, `value.cc`, `cow.h`, `cow.cc`, `vm.cc`
 
+> **Update (2026-06-12)**: `backend/vm` (the standalone C++ VM copy) has been
+> removed. Self-host suites now use the bootstrap Ref compiler as the VM host
+> (`--run`); the RC/COW value model is maintained in the bootstrap tree
+> (`src/vm`). The self-host backend is to be reimplemented in Kinglet itself.
+
 Replace the deep-copy value model with reference-counted heap objects:
 
 ```
