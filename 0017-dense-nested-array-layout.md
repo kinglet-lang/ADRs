@@ -67,7 +67,7 @@ Access rules:
 
 | Operation | Dense `T[][]` | Jagged `T[][]` (unchanged) |
 |-----------|---------------|----------------------------|
-| `m[i][j]` read | `elements[i * cols + j]` | two `IndexGet` |
+| `m[i][j]` read | row-major flat storage; **v1** still two `IndexGet` (row copy then cell) | two `IndexGet` on jagged rows |
 | `m[i]` | **new** `T[]` row copy (value semantics) | existing row handle |
 | `m.len()` | `dense_dims[0]` (rows) | outer length |
 | `m[i].len()` | `dense_dims[1]` (cols) | inner length |
@@ -123,22 +123,23 @@ stable.
 
 **Tests**
 
-- VM + native smoke: rectangular literal `[[1,2],[3,4]]`, `m[1][0]`.
-- Differential: jagged literal (`row0`, `row1`) unchanged behavior.
-- Sema: no type changes; optional `tests/sema/pass/dense_array_literal.kl`.
+- [x] Native smoke: `dense_array_literal` — `[[1,2],[3,4]]`, `m[1][0]` → 3.
+- [ ] Differential: jagged literal (`row0`, `row1`) unchanged behavior.
+- [ ] Sema: no type changes; optional `tests/sema/pass/dense_array_literal.kl`.
 
 ## Implementation order
 
-1. RT: `dense_dims` on `KlArray`, `kl_dense_array_new`, dense branches in
-   `kl_array_get` / `kl_index_get`.
-2. Compiler: literal shape analysis → `DenseArrayNew` in bytecode + KIR recorder.
-3. VM opcode handler (or shared RT from opcode).
-4. LLVM: lower `DenseArrayNew`; optional `kl_dense2d_get` fusion for typed
-   double index.
-5. Rank-3+ and non-literal dense constructors.
+1. [x] RT: `dense_dims` on `KlArray`, `kl_dense_array_new`, dense branches in
+   `kl_array_get` / `kl_index_get`; `kl_dense2d_get` reserved for fusion.
+2. [x] Compiler: literal shape analysis → `DenseArrayNew` in bytecode + KIR recorder.
+3. [x] VM: `DenseArrayNew` opcode; dense `IndexGet` / `ArrayLen` / degrade on mutate.
+4. [x] LLVM: lower `DenseArrayNew`.
+5. [ ] LLVM: fuse typed `m[i][j]` to `kl_dense2d_get` when value stays dense.
+6. [ ] Rank-3+ and non-literal dense constructors.
 
 ## Related
 
 - [0016](0016-typed-kir.md) — container metadata for chained `IndexGet`
 - [0002](0002-design-principles.md) — value semantics, row copy
 - [0015](0015-llvm-backend-roadmap.md) — native RT parity
+- [0013](0013-bootstrap-bytecode-delta.md) — `DenseArrayNew` opcode appended; refresh codegen goldens on emit changes

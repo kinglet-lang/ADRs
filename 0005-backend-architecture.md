@@ -1,6 +1,6 @@
 # 0005 — Backend Architecture: KIR + Dual Backend
 
-- **Status**: accepted
+- **Status**: implemented
 - **Proposed**: 2026-05-31
 - **Completed**: 2026-06-09
 

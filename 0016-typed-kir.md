@@ -1,6 +1,6 @@
 # 0016 — Typed KIR for Native Lowering
 
-- **Status**: implemented (phase 1)
+- **Status**: implemented (phase 1; phase 2 partial — see below)
 - **Proposed**: 2026-06-10
 - **Completed**: 2026-06-10
 
@@ -32,21 +32,31 @@ is `Bool` or `Null`.
 - Native smoke: `bool_null_print`, `int64_high` green alongside existing manifest
 - VM parity unchanged for programs not using typed paths
 
-## Phase 2 (planned — V0 / follow-up)
+## Phase 2 (partial — V0 / follow-up)
 
 Not required to close [0015](0015-llvm-backend-roadmap.md) or this ADR.
 
+### Phase 2a — landed (2026-06-12)
+
+| Item | Status | Notes |
+|------|--------|--------|
+| CFG merge typing | **Done** | Join `locals` / `local_containers` / stack at block leaders (`kir_typing.cc`); `if_else_array_index` smoke |
+| Container unboxing (1-level) | **Done** | Typed `Array<T>` / `Map` value `IndexGet` → scalar LLVM unbox |
+| Nested container typing | **Done** | Two-level `KirContainerType`; `m[i][j]`, `map[k][i]`; checker `Array<…>` strings in Shadow |
+| Fixed-width `int32` slice | **Partial** | Literals, binops, struct/array/map fields; `fixed_width_int32`, `array_int32_index` smoke — not full D7 width table |
+
+### Phase 2b — open
+
 | Item | Notes |
 |------|--------|
-| CFG merge typing | Join types at `CondBr` merge points instead of widening to `Any` |
-| Container unboxing | `Array`/`Map` element loads when field types are known scalars |
-| Fixed-width types | Surface `int8`–`int64`, `float32`/`float64` per [0015](0015-llvm-backend-roadmap.md) D7 |
+| Fixed-width full surface | Remaining `int8`–`int64`, `uint*`, `float32`/`float64` per [0015](0015-llvm-backend-roadmap.md) D7 |
 | Generic `io` / `+` | Unified bool/null printing without wire `1`/`0` on format paths |
+| Dense `m[i][j]` fusion | `kl_dense2d_get` exists; LLVM peephole not wired ([0017](0017-dense-nested-array-layout.md)) |
 
-See project `Kinglet-TODO.md` and [native.md](../docs/native.md) known gaps.
+See [native.md](../docs/native.md) known gaps.
 
 ## Consequences
 
 - Scalar hot paths avoid `kl_value_*` dispatch when inference is precise
-- Phase 2 items remain tracked in [0015](0015-llvm-backend-roadmap.md) D6 open rows
-  and V0 backlog; they do not block ADR 0014/0015 closure
+- Remaining phase 2b items are tracked in [0015](0015-llvm-backend-roadmap.md) D6 and
+  [0017](0017-dense-nested-array-layout.md); they do not block ADR 0014/0015 closure

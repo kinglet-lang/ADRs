@@ -134,7 +134,7 @@ constructs. Concrete widths and aliases are fixed in **D7** below.
 regression case that would fail on any precision or range mismatch. Native parity
 debt is repaired in dedicated follow-up work; it is not deferred indefinitely.
 
-**Parity status** (bootstrap; `tests/native/manifest.txt`, 2026-06-10):
+**Parity status** (bootstrap; `tests/native/manifest.txt`, updated 2026-06-12):
 
 | Item | Status |
 |------|--------|
@@ -149,8 +149,12 @@ debt is repaired in dedicated follow-up work; it is not deferred indefinitely.
 | `io` / `fs` / `sys` natives | **Resolved** — `io_line`, `fs_roundtrip`, `sys_args_len` |
 | Multi-module `import` link | **Resolved** — `import_add` |
 | Scalar `string(bool)` / `string(null)` | **Resolved** — `bool_null_print` ([0016](0016-typed-kir.md)) |
-| Generic `io` format / `+` on bool wire | **Open** — see [0016](0016-typed-kir.md) phase 2 |
-| Fixed-width surface types (D7) | **Open** — policy locked; implementation deferred to V0 |
+| Container scalar `IndexGet` unboxing | **Resolved** — `array_int32_index`, `map_int32_value`, `struct_int32_field` |
+| Nested container chained index | **Resolved** — `nested_array_index`, `nested_map_array_index` |
+| CFG merge after branch array assign | **Resolved** — `if_else_array_index` ([0016](0016-typed-kir.md) phase 2a) |
+| Dense `T[][]` rectangular literals | **Partial** — `dense_array_literal`; row-major storage, two-hop `m[i][j]` ([0017](0017-dense-nested-array-layout.md)) |
+| Generic `io` format / `+` on bool wire | **Open** — see [0016](0016-typed-kir.md) phase 2b |
+| Fixed-width surface types (D7) | **Partial** — `int32` slice in smoke; full width table still V0 |
 
 ### D7 — Fixed-width numeric types
 

@@ -1,6 +1,6 @@
 # 0013 — Bootstrap Bytecode Parity
 
-- **Status**: accepted
+- **Status**: implemented
 - **Proposed**: 2026-06-08
 - **Completed**: 2026-06-09
 
@@ -66,5 +66,8 @@ cases (guard, pipe, generics) may still differ in bytecode while behavior matche
   together with an documented reason.
 - Refresh `tests/codegen/cases/*.bytecode` via `tests/codegen/refresh_goldens.sh`
   after intentional bytecode output changes.
+- New VM opcodes must be **appended** after existing ordinals (see `chunk.h`); e.g.
+  `DenseArrayNew` ([0017](0017-dense-nested-array-layout.md)) — refresh goldens when
+  bootstrap emits it for rectangular literals.
 - Enum/constant pool drift in small programs is tracked separately in differential
   matrix (non-gating).
