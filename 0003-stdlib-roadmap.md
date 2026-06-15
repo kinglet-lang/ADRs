@@ -1,8 +1,8 @@
 # 0003 — Standard Library Roadmap
 
-- **Status**: draft
+- **Status**: accepted (phased)
 - **Proposed**: 2026-05-29
-- **Revised**: 2026-06-07
+- **Revised**: 2026-06-15
 
 ## Context
 
@@ -18,13 +18,22 @@ After the self-host round-trip is verified, the standard library is the next maj
 
 User syntax (see [0011](0011-module-system-redesign.md)) treats `using io;` / `io::out.line(...)` as **stdlib namespaces**, but the implementation is still compiler magic — **not** `.kl` modules loaded via `import {}`.
 
-**Language builtins** (`int[]`, `.len()`, `.push()`, `match`, etc.) are also opcode-dispatched, but they are part of the language semantics and **are not** stdlib. This decision does not migrate them.
+**Language builtins** are also opcode-dispatched. A finer boundary applies here (revised 2026-06-15, see scope note below): true language *syntax/operators* — array/map **literals**, the index operator `a[i]`, `match`, `const` lowering — stay compiler responsibilities and are never stdlib. But the *method surface* on built-in types (`string`/`array`/`map` methods such as `.len()`/`.push()`/`.split()`/`.has()`) **is in scope for a later phase**: those methods migrate to stdlib written over `extern native` collection primitives, so the compiler stops carrying a hardcoded method whitelist.
 
 ### Goal
 
 Introduce a `stdlib/` tree so platform APIs (`io` / `fs` / `sys`) have a single Kinglet source of truth. The compiler should only hardcode **how to lower `extern native` to opcodes**, not scatter `if (ns == "io" && member == "out")` tables across three files.
 
 ## Decision
+
+### Scope and landing target (decided 2026-06-15)
+
+- **Landing pipeline**: the self-host compiler (`kinglet/*.kl`) is the target body. C++ bootstrap (`bootstrap/src/{checker,compiler,vm,codegen}`) is brought to parity afterward (new Phase D), reusing the same single-table approach. The L0 runtime (`vm.cc` opcode bodies, `kl_*`) does not move.
+- **Migration scope, in priority order**:
+  1. **Platform APIs** `io` / `fs` / `sys` first (Phase A) — the original goal.
+  2. **Built-in collection methods** on `string` / `array` / `map` second (new Phase A2) — move the hardcoded method whitelist into stdlib over `extern native` primitives.
+  3. Pure-Kinglet modules (Phase B) and self-hosted VM (Phase C) as before.
+- **Out of scope (stays language semantics)**: array/map literals, the index operator `a[i]`, `match`, `const` lowering, and the value/copy + deterministic-destruction model from [0002](0002-design-principles.md).
 
 ### Four-layer model
 
@@ -144,6 +153,20 @@ Optional user-facing API (can run in parallel with steps 3–4):
 
 **Explicitly out of scope for Phase A**: removing VM opcodes; moving `array.len()` and other language builtins; breaking existing `io::out.line` call sites.
 
+### Phase A2 — Builtin collection-method migration (string / array / map)
+
+Moves the hardcoded built-in *method* whitelist into stdlib while keeping operators/literals as language syntax. Prerequisite: `extern native` (or a manifest entry) for the irreducible collection primitives that map to existing opcodes / `kl_*` (e.g. `array_push`, `array_len`, `str_split`, `map_has`). High-level methods are then ordinary Kinglet functions resolved via UFCS/methods over those primitives.
+
+Order (least to most coupled):
+
+1. `string` methods (`.len/.contains/.starts_with/.ends_with/.index_of/.slice/.replace/.split/.trim/.to_upper/.to_lower`) — most self-contained.
+2. `map` methods (`.len/.has/.remove/.keys`).
+3. `array` methods (`.len/.push/.pop/.remove/.contains/.clear/.insert/.index_of/.slice/.reverse/.resize`) — most coupled to literals and the dense layout from [0017](0017-dense-nested-array-layout.md).
+
+Each step removes that group from the compiler's method whitelist (self-host first; bootstrap parity in Phase D) and replaces it with a stdlib definition, locked by the existing probe/golden suites.
+
+**Constraint**: heavier stdlib allocation amplifies the no-GC gap (manual `new`, drops not yet inserted; see [native.md](../docs/native.md)). Evaluate whether KIR drop insertion (ADR 0002) must land before array migration.
+
 ### Phase B — Core stdlib modules (pure Kinglet)
 
 After L2 is stable:
@@ -167,6 +190,10 @@ Implement the VM in Kinglet; C++ bootstrap becomes a stub only:
 
 The L0 opcode set may **move in implementation** as the VM migrates, but the **semantic boundary** (platform vs language builtin) stays the same. See [0010](0010-vm-redesign.md).
 
+### Phase D — C++ bootstrap parity
+
+After the self-host pipeline is stable, fold the same single-table / `extern native` approach into the C++ bootstrap so both pipelines agree: the platform namespace tables in [type_checker.cc](../../bootstrap/src/checker/type_checker.cc) and the seams in [compiler.cc](../../bootstrap/src/compiler/compiler.cc) (`:998-1094` namespaces, `:1241-1347` method whitelist) read one manifest instead of scattered `if` chains. L0 stays untouched: `vm.cc` opcode bodies and the `kl_*` runtime (`declare_runtime` in [kir_to_llvm.cc](../../bootstrap/src/codegen/llvm/kir_to_llvm.cc), impls in `bootstrap/runtime/`) do not change.
+
 ## Consequences
 
 ### Positive
@@ -180,7 +207,7 @@ The L0 opcode set may **move in implementation** as the VM migrates, but the **s
 - **Dual-track transition**: while manifest and legacy hardcoding coexist, golden/probe tests must lock behavior. The probe matrix should continue to run entirely via `compiler.kbc` (self-host semantics).
 - **Prelude vs explicit import**: library authors who want zero prelude dependency must `import "//stdlib/..."` explicitly; docs must state prelude is on by default.
 - **Bootstrap vs self-host**: `extern native` syntax must land in both pipelines, or Phase A uses a manifest data file first to avoid parser gaps.
-- **Do not put language builtins in stdlib**: `.len()`, `match`, top-level `const` lowering, etc. are compiler responsibilities — not `stdlib/collections` pretending to be the standard library.
+- **Keep operators/syntax as language semantics**: array/map literals, the index operator `a[i]`, `match`, and top-level `const` lowering stay compiler responsibilities. The revised scope (2026-06-15) *does* migrate the built-in **method surface** (`.len()`/`.push()`/`.split()` etc.) to stdlib in Phase A2 — but only the methods, lowered over `extern native` primitives; the underlying opcodes/`kl_*` remain.
 
 ### Acceptance criteria (Phase A complete)
 
