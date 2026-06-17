@@ -1,6 +1,6 @@
 # 0019 — Self-Host LLVM Backend
 
-- **Status**: accepted — Route B; S0 + S1 integer/control-flow lowering delivered 2026-06-17
+- **Status**: accepted — Route B; S0 + S1 integer/control-flow lowering delivered 2026-06-18
 - **Proposed**: 2026-06-17
 
 ## Context
@@ -116,7 +116,7 @@ Ref compiler may continue reading `kinglet.toml` during transition (0020 D6).
 
 ## Amendments
 
-### 2026-06-17 — S0 via Route B (textual .ll, no C++ FFI)
+### 2026-06-18 — Route B delivery (textual .ll, no C++ FFI)
 
 S0 is implemented and the open **FFI vs pure-KL** question (Open Question 1) is
 resolved in favour of **pure-KL lowering**: the Shadow emits **textual LLVM IR
