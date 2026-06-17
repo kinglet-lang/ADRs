@@ -1,6 +1,6 @@
 # 0019 — Self-Host LLVM Backend
 
-- **Status**: accepted — S0 delivered 2026-06-17 (Route B); S1 in progress
+- **Status**: accepted — Route B; S0 + S1 integer/control-flow lowering delivered 2026-06-17
 - **Proposed**: 2026-06-17
 
 ## Context
@@ -140,15 +140,18 @@ Files: `ir/ir.kl` (`KirType`), `ir/ir_emit.kl` (`build_kir_from_chunk`), the
 
 S0 exit criterion met: `just42.kl` → native binary exits 42 (no C++ `KirToLlvm`).
 
-S1 in progress: straight-line integer ops lowered with an SSA virtual stack —
+S1 integer lowering is implemented with an SSA virtual stack for expression
+values and **alloca-backed locals** (`StoreLocal`→`store`, `LoadLocal`→`load`),
+so mutable variables work across control flow without phi nodes. Lowered:
 `int` constants, arithmetic (`Add`/`Subtract`/`Multiply`/`Divide`/`Modulo`, incl.
-`I32` variants), local variables (locals-as-SSA: `StoreLocal`/`LoadLocal`/`Pop`),
-bitwise/shift (`BitAnd`/`BitOr`/`BitXor`/`Shl`/`Shr`), comparisons
-(`Eq`/`Neq`/`Lt`/`Gt`/`Le`/`Ge` → `icmp` + `zext i1 → i64`), and unary
-(`Negate`/`BitNot`). Verified by ~28 cases in `shadow_manifest.txt`. Integer
-arithmetic is lowered as `i64`, matching the VM for non-overflowing values (i32
-overflow parity is S2).
+`I32` variants), local variables, bitwise/shift (`BitAnd`/`BitOr`/`BitXor`/
+`Shl`/`Shr`), comparisons (`Eq`/`Neq`/`Lt`/`Gt`/`Le`/`Ge` → `icmp` + `zext i1 → i64`),
+unary (`Negate`/`BitNot`), and **control flow** — basic-block reconstruction
+from `Jmp`/`JmpFalse`, covering `if`/`else` and `while` loops, including variables
+mutated across branches and iterations. Verified by ~38 cases in
+`shadow_manifest.txt`. Integer arithmetic is lowered as `i64`, matching the VM
+for non-overflowing values (i32 overflow parity is a later tier). Typed-pointer
+syntax (`i64*`) is used so the emitted `.ll` assembles on LLVM 14 as well as 15+.
 
-Deferred to S2+: control flow (CFG reconstruction from `Jmp`/`JmpFalse` — still
-single `bb0` per function), function calls (`kinglet_fn_` mangling), aggregates,
+Deferred: function calls (`kinglet_fn_` mangling + argument ABI), aggregates,
 and errors.

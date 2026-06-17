@@ -82,5 +82,5 @@ draft → accepted → implemented
 | 0016 | [Typed KIR for native lowering](0016-typed-kir.md) | implemented (phase 1; phase 2 partial) | 2026-06-10 | 2026-06-10 |
 | 0017 | [Dense layout for `T[][]…[]` syntax](0017-dense-nested-array-layout.md) | implemented (v1: 2D literals) | 2026-06-12 | 2026-06-12 |
 | 0018 | [Logical module system](0018-logical-module-system.md) | draft | 2026-06-17 | |
-| 0019 | [Self-host LLVM backend](0019-self-host-llvm-backend.md) | accepted (S0 delivered; S1 in progress) | 2026-06-17 | |
+| 0019 | [Self-host LLVM backend](0019-self-host-llvm-backend.md) | accepted (S0 + S1 lowering delivered) | 2026-06-17 | |
 | 0020 | [Project manifest (`.nest`) and build targets](0020-project-manifest-and-targets.md) | draft | 2026-06-17 | |
