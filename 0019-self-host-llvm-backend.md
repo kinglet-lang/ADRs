@@ -1,6 +1,6 @@
 # 0019 — Self-Host LLVM Backend
 
-- **Status**: draft
+- **Status**: accepted — S0 delivered 2026-06-17 (Route B); S1 in progress
 - **Proposed**: 2026-06-17
 
 ## Context
@@ -113,3 +113,42 @@ Ref compiler may continue reading `kinglet.toml` during transition (0020 D6).
 - C++ lowering: `bootstrap/src/codegen/llvm/kir_to_llvm.cc`
 - KIR mirror: `kinglet/compiler/ir_emit.kl`, `ir.kl`
 - Native smoke: `tests/native/manifest.txt`, `tests/native/run_smoke.sh`
+
+## Amendments
+
+### 2026-06-17 — S0 via Route B (textual .ll, no C++ FFI)
+
+S0 is implemented and the open **FFI vs pure-KL** question (Open Question 1) is
+resolved in favour of **pure-KL lowering**: the Shadow emits **textual LLVM IR
+(`.ll`)** directly, with no FFI to Ref `KirToLlvm` and no C++ on the path. This
+matches [0015](0015-llvm-backend-roadmap.md) D-data-layout defaults; the host
+`clang++` (lld fallback per D3 is deferred — S3) assembles and links.
+
+Pipeline (delivered):
+
+```
+.kl → Shadow compile_program → Chunk
+    → build_kir_from_chunk (ir/ir_emit.kl, Chunk→KirModule post-pass)
+    → emit_ll (compiler/ll_emit.kl, KirModule→.ll)
+    → clang++ -c → clang++ link libkinglet_rt.a → native binary
+```
+
+Files: `ir/ir.kl` (`KirType`), `ir/ir_emit.kl` (`build_kir_from_chunk`), the
+`Compiler.kir` field + `compile_program` hook (`compiler_state.kl`,
+`compiler/compiler.kl`), `compiler/ll_emit.kl` (`emit_ll`), the `--emit-ll` flag
+(`core/main.kl`), and `tests/native/run_smoke_shadow.sh` + `shadow_manifest.txt`.
+
+S0 exit criterion met: `just42.kl` → native binary exits 42 (no C++ `KirToLlvm`).
+
+S1 in progress: straight-line integer ops lowered with an SSA virtual stack —
+`int` constants, arithmetic (`Add`/`Subtract`/`Multiply`/`Divide`/`Modulo`, incl.
+`I32` variants), local variables (locals-as-SSA: `StoreLocal`/`LoadLocal`/`Pop`),
+bitwise/shift (`BitAnd`/`BitOr`/`BitXor`/`Shl`/`Shr`), comparisons
+(`Eq`/`Neq`/`Lt`/`Gt`/`Le`/`Ge` → `icmp` + `zext i1 → i64`), and unary
+(`Negate`/`BitNot`). Verified by ~28 cases in `shadow_manifest.txt`. Integer
+arithmetic is lowered as `i64`, matching the VM for non-overflowing values (i32
+overflow parity is S2).
+
+Deferred to S2+: control flow (CFG reconstruction from `Jmp`/`JmpFalse` — still
+single `bb0` per function), function calls (`kinglet_fn_` mangling), aggregates,
+and errors.
