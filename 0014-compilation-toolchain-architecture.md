@@ -277,3 +277,23 @@ prove suites; fast paths use `ensure_build_stamp` as planned in M0.
   save strip ~3s; self-host save debug ~4s.
 - `tests/common.sh` — `ensure_cli_kbc`, `compile_kl`, `compile_selfhost`.
 - `core/main.kl` — current CLI entry for Shadow compiler.
+
+## Amendments
+
+### 2026-06-17 — Project manifest and build targets ([0020](0020-project-manifest-and-targets.md))
+
+D5 `kinglet.toml` project schema is **amended** for new projects:
+
+| D5 (this ADR, 2026-06-10) | Amended policy ([0020](0020-project-manifest-and-targets.md)) |
+|---------------------------|---------------------------------------------------------------|
+| `[build].root = "core/main.kl"` | `binary <artifact> -> module "<logical>"` in `kinglet.nest` |
+| `kinglet.toml` manifest | `kinglet.nest` (PML); TOML dual-read during transition only |
+| Single implicit executable | Explicit `binary` / `library` target registration |
+
+**Unchanged:** Klos layout (D4), stamp model, `kinglet build` / prove commands, Ref vs
+Shadow dual-track (D1), kbc as VM backend output (D3).
+
+Shadow / self-host build orchestration reads `.nest` only and does not implement TOML
+([0020](0020-project-manifest-and-targets.md) D5, [0019](0019-self-host-llvm-backend.md) D5).
+
+Original D5 text and examples above are preserved for historical context.

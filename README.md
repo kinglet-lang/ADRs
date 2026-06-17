@@ -25,6 +25,27 @@ What we decided to do.
 What changes and what to watch out for.
 ```
 
+### Amendments
+
+When a later decision changes or extends an **implemented** ADR, append an
+`## Amendments` section at the **end** of the original file. Do **not** edit the
+original decision text in place.
+
+Each entry:
+
+```markdown
+## Amendments
+
+### YYYY-MM-DD — Short title ([NNNN](NNNN-slug.md))
+
+<What is superseded, amended, or deferred; pointer to the new ADR.>
+
+Original sections above are preserved for historical context.
+```
+
+Update the index **Status** column when an ADR is superseded (e.g.
+`superseded-by [0018](0018-…)` for partial supersession, note in Amendments).
+
 ## Lifecycle
 
 ```
@@ -60,3 +81,6 @@ draft → accepted → implemented
 | 0015 | [LLVM backend roadmap](0015-llvm-backend-roadmap.md) | implemented | 2026-06-09 | 2026-06-10 |
 | 0016 | [Typed KIR for native lowering](0016-typed-kir.md) | implemented (phase 1; phase 2 partial) | 2026-06-10 | 2026-06-10 |
 | 0017 | [Dense layout for `T[][]…[]` syntax](0017-dense-nested-array-layout.md) | implemented (v1: 2D literals) | 2026-06-12 | 2026-06-12 |
+| 0018 | [Logical module system](0018-logical-module-system.md) | draft | 2026-06-17 | |
+| 0019 | [Self-host LLVM backend](0019-self-host-llvm-backend.md) | draft | 2026-06-17 | |
+| 0020 | [Project manifest (`.nest`) and build targets](0020-project-manifest-and-targets.md) | draft | 2026-06-17 | |

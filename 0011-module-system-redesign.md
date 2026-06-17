@@ -128,3 +128,21 @@ This is the simplest rule. Lazy/deferred loading adds complexity that isn't just
 1. **Relative path resolution** — relative to the importing file (current), or relative to a project root? File-relative is simpler but deeply nested paths get ugly (`"../../../../core/types.kl"`).
 2. **Index file convention** — should `import { "../parser" }` resolve to `parser/index.kl` or `parser/parser.kl`? Or require explicit file paths always?
 3. **Re-exports** — should a module be able to `pub using dep { Sym };` to re-export a dependency's symbol under its own namespace?
+
+## Amendments
+
+### 2026-06-17 — Superseded by logical modules ([0018](0018-logical-module-system.md))
+
+The **import syntax** and **namespace naming** in §Decision are superseded for new work:
+
+| This ADR (0011) | Superseded by [0018](0018-logical-module-system.md) |
+|-----------------|------------------------------------------------------|
+| `import { "path.kl" }` | `import <logical>;` + manifest `dependency` ([0020](0020-project-manifest-and-targets.md)) |
+| Namespace = file stem | Namespace = `export module <name>;` |
+| `using module { sym };` | Retained; add `using module::*;` |
+
+**Retained without change:** singleton loading (D3), non-transitive imports (D4),
+`pub` visibility, circular-import errors, stdlib `using io;` ergonomics.
+
+Original sections above are preserved for historical context and for code still on
+the 0011 syntax until migration completes.

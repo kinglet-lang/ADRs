@@ -35,16 +35,15 @@ Introduce a `stdlib/` tree so platform APIs (`io` / `fs` / `sys`) have a single 
   3. Pure-Kinglet modules (Phase B) and self-hosted VM (Phase C) as before.
 - **Out of scope (stays language semantics)**: array/map literals, the index operator `a[i]`, `match`, `const` lowering, and the value/copy + deterministic-destruction model from [0002](0002-design-principles.md).
 
-### Four-layer model
+- **Platform I/O API (decided 2026-06-15)**: the canonical user-facing surface is **`io::out.line` / `io::err.line` / `io::in`** (and related native members). There is **no L3 syntax-sugar layer** — no `println`, `readln`, or `stdlib/io/mod.kl` wrappers over I/O.
 
-The relationship between stdlib and hardcoded builtins is layered. **VM opcodes are not removed**; names and signatures move up into Kinglet:
+### Three-layer model
+
+The relationship between stdlib and hardcoded builtins is layered. **VM opcodes are not removed**; names and signatures move into `stdlib/native/*.kl`:
 
 ```
-L3  User-facing API (stdlib/, pure Kinglet)
-      stdlib/io/mod.kl — println, readln, …
-           ↓ calls
-L2  Platform bindings (stdlib/, thin wrappers)
-      stdlib/native/io.kl — extern native declarations + optional chained API
+L2  Platform bindings (stdlib/native/*.kl)
+      extern native namespace io { … }  — user calls io::out.line(...)
            ↓ lowers to
 L1  Compiler/VM contract (irreducible)
       extern native manifest → opcode table (single source of truth)
@@ -57,10 +56,9 @@ L0  Runtime (C++ VM today; see Phase C long-term)
 |-------|----------|-------------------|
 | **L0** | VM opcodes, OS hooks | Always retained |
 | **L1** | `extern native` declarations or manifest; `emit_native_call` table lookup | Compiler hardcodes **lowering rules**, not the **API list** |
-| **L2** | `stdlib/native/*.kl` | Ordinary modules, `import`-able |
-| **L3** | `stdlib/io/`, `stdlib/collections/`, etc. | Pure Kinglet |
+| **L2** | `stdlib/native/{io,fs,sys}.kl` | Ordinary prelude modules; `using io;` + `io::out.line` |
 
-In short: **VM opcodes remain builtins; stdlib is the Kinglet surface and user API over those builtins.**
+In short: **VM opcodes remain builtins; the stdlib is the Kinglet declaration of those builtins — not a second naming layer on top.**
 
 ### Directory layout
 
@@ -72,9 +70,7 @@ kinglet-self/
       io.kl             # L2: extern native io { … }
       fs.kl
       sys.kl
-    io/
-      mod.kl            # L3: println, readln, …
-    collections/
+    collections/        # Phase B (non-platform stdlib)
     result.kl
     option.kl
     …
@@ -105,9 +101,9 @@ import = [
 The compiler injects prelude imports at the start of `compile_program` (same singleton loading as explicit `import {}`). After migration:
 
 - `using io;` → opens the **prelude-imported** `stdlib/native/io` module namespace
-- `io::out.line(...)` → ordinary module symbol declared `extern native`, no magic namespace special case
+- `io::out.line(...)` → ordinary `extern native` symbol, no magic namespace special case
 
-`using namespace io;` (see current compiler support) is for unqualified access inside L2 wrappers only. User code should still prefer `using io;` + `io::out.line` or L3 helpers like `println`.
+`using namespace io;` (see current compiler support) opens unqualified native members (`out`, `err`, `in`). User code should prefer **`using io;` + `io::out.line`** as the standard I/O style.
 
 ### `extern native` (L1 contract)
 
@@ -134,7 +130,7 @@ During transition, a **manifest file** (`.kl` or generated data) may serve as th
 | `import {}` | Required; declares dependencies | Prelude auto-import + explicit `import "//stdlib/..."` |
 | `using module { sym };` | Pull symbols from an imported module | Same |
 | `using io;` | N/A | Open the prelude native module |
-| `io::out` | N/A | Qualified access (recommended) |
+| `io::out.line` | N/A | Qualified access (canonical) |
 
 Stdlib does **not** get a second import system. It is simply **Kinglet modules imported by default via prelude**.
 
@@ -147,11 +143,7 @@ Incremental steps; each can land independently and be rolled back:
 3. **Wire prelude** — Compiler injects prelude at startup; `using io` resolves to the loaded `stdlib/native/io` module.
 4. **Drop magic namespaces** — Replace `is_native_namespace("io")` special cases with "module name + extern native marker"; `emit_native_call` only consults the L1 table.
 
-Optional user-facing API (can run in parallel with steps 3–4):
-
-- `stdlib/io/mod.kl` — `println`, `readln`, etc., calling into L2.
-
-**Explicitly out of scope for Phase A**: removing VM opcodes; moving `array.len()` and other language builtins; breaking existing `io::out.line` call sites.
+**Explicitly out of scope for Phase A**: removing VM opcodes; moving `array.len()` and other language builtins; breaking existing `io::out.line` call sites; I/O syntax sugar (`println`, `readln`, etc.).
 
 ### Phase A2 — Builtin collection-method migration (string / array / map)
 
@@ -227,3 +219,97 @@ After the self-host pipeline is stable, fold the same single-table / `extern nat
 
 - Current native implementation: `compiler/compiler_state.kl`, `compiler/codegen.kl`, `checker/checker.kl`
 - Module path resolution: `compiler/compiler.kl` (`find_project_root`, `//` paths)
+
+## Amendments
+
+### 2026-06-17 — Prelude and paths in `kinglet.nest` ([0020](0020-project-manifest-and-targets.md))
+
+Directory layout and configuration examples that reference `kinglet.toml` with
+`[paths]` / `[prelude]` are **amended** for new work:
+
+| This ADR (0003) | Amended policy |
+|-----------------|----------------|
+| `kinglet.toml` `[paths]` + `[prelude]` | `kinglet.nest` `prelude { import "..." }` block ([0020](0020-project-manifest-and-targets.md) D2) |
+| `import { "//stdlib/native/io.kl" }` in user code | Retained; logical `import io;` when stdlib is a manifest `dependency` ([0018](0018-logical-module-system.md)) |
+| Project root = directory containing manifest | Directory containing `kinglet.nest` |
+
+Self-host must **not** grow a TOML parser; prelude wiring moves to the PML loader
+([0020](0020-project-manifest-and-targets.md) D5). C++ Ref may dual-read TOML during
+transition (0020 D6).
+
+Original `kinglet.toml` examples in §Directory layout and §Prelude are preserved for
+historical context.
+
+### 2026-06-17 — Runtime via C lowering; no project prelude ([0020](0020-project-manifest-and-targets.md))
+
+The **prelude-in-manifest** approach (inject `stdlib/native/*.kl` via `kinglet.toml`
+or `kinglet.nest`) is **deferred** in favour of:
+
+| Topic | Policy |
+|-------|--------|
+| `io` / `fs` / `sys` | Compiler-known platform namespaces; **lowered to C** (`libkinglet_rt` / VM natives) |
+| User syntax | `using io;`, `io::out.line(...)` — no per-project prelude config |
+| Stdlib `.kl` files | Optional **type stubs** for checker/LSP; not loaded via manifest |
+| Manifest | `modules` + `targets` only ([0020](0020-project-manifest-and-targets.md) PML v2) |
+
+Rationale: runtime capability is a **toolchain contract** (KL → KIR → C calls), not a
+dependency users wire in each `kinglet.nest`. Avoids duplicate graphs and ugly prelude
+blocks.
+
+Previous Amendment 2026-06-17 (prelude in `.nest`) is superseded by this entry.
+
+### 2026-06-17 — Stdlib directory tree; `using namespace`; C ABI boundary
+
+**Directory layout** replaces §Directory layout `stdlib/native/`:
+
+```
+stdlib/
+  manifest.kl           # L1: native API registry → opcode / C ABI table
+  io/
+    io.kl               # L2 stub: platform I/O (C ABI only)
+  fs/
+    fs.kl
+  sys/
+    sys.kl
+  math/
+    math.kl             # pure Kinglet (no C ABI)
+  algorithms/
+    algorithms.kl
+  map/
+    map.kl              # pure KL over language map type; primitives via C ABI
+  …
+```
+
+| Category | Path pattern | Implementation |
+|----------|--------------|----------------|
+| **Platform** | `stdlib/{io,fs,sys}/<name>.kl` | **C ABI** (`libkinglet_rt`, VM natives); KL file is declaration + docs |
+| **Pure stdlib** | `stdlib/<pkg>/<pkg>.kl` | Ordinary Kinglet; no manifest entry required |
+| **L1 table** | `stdlib/manifest.kl` | Single `is_native_*` source for checker/codegen until `extern native` syntax lands |
+
+`stdlib/native/` is **deprecated**; new paths are `//stdlib/io/io.kl`, etc.
+
+**User ergonomics (long-term, both retained):**
+
+| Form | Meaning |
+|------|---------|
+| `using io;` | Open namespace; call `io::out.line(...)` |
+| `using namespace io;` | Open unqualified members (`out.line`, `err.line`, `in.secret`) |
+
+No deprecation of `using namespace io;`. Checker registers native aliases via
+`manifest::native_members_of` when `using namespace` is parsed.
+
+**C ABI boundary:** any capability that touches the OS, process environment, or runtime
+wire format is implemented in **C** (today: `libkinglet_rt` + VM opcodes). Kinglet
+sources declare the API; the compiler **lowers** calls to C symbols. Pure modules
+(`math`, `algorithms`, …) have no `extern native` entries in `manifest.kl`.
+
+**Project manifest:** user `kinglet.nest` does **not** list stdlib platform modules.
+Optional explicit `import math;` only when a user project adds `stdlib/math/math.kl` to
+its own `modules { }` block (toolchain repo paths are separate).
+
+Toolchain `kinglet.toml` `[prelude]` may still list platform stubs during C++/TOML
+transition; removed when compiler injects platform namespaces without prelude
+(0020 Amendment 2026-06-17).
+
+Original §Three-layer model and §Directory layout text above are preserved for
+historical context.

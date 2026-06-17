@@ -407,3 +407,19 @@ Do not start L2 until L1 checkpoint is green.
 
 - LLVM documentation: IR builder, ORC JIT (spike only), target triples.
 - `tests/exec/` — primary behavioural oracle for L1–L3.
+
+## Amendments
+
+### 2026-06-17 — Self-host LLVM scheduled ([0019](0019-self-host-llvm-backend.md))
+
+The consequence bullet "Shadow `codegen/llvm.kl` remains a future optional project,
+not on the critical path" is **amended**:
+
+- Self-host LLVM lowering is now on the roadmap as [0019](0019-self-host-llvm-backend.md)
+  phases **S0–S4**.
+- C++ Ref LLVM (L0–L5, completed 2026-06-10) remains the bootstrap authority until
+  S4; numeric parity rules (D6–D7) apply to Shadow native equally.
+- Shadow build configuration uses `kinglet.nest` ([0020](0020-project-manifest-and-targets.md)),
+  not TOML.
+
+Original consequence text above is preserved for historical context.
