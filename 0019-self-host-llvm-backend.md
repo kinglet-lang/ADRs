@@ -146,12 +146,14 @@ so mutable variables work across control flow without phi nodes. Lowered:
 `int` constants, arithmetic (`Add`/`Subtract`/`Multiply`/`Divide`/`Modulo`, incl.
 `I32` variants), local variables, bitwise/shift (`BitAnd`/`BitOr`/`BitXor`/
 `Shl`/`Shr`), comparisons (`Eq`/`Neq`/`Lt`/`Gt`/`Le`/`Ge` → `icmp` + `zext i1 → i64`),
-unary (`Negate`/`BitNot`), and **control flow** — basic-block reconstruction
+unary (`Negate`/`BitNot`), **control flow** — basic-block reconstruction
 from `Jmp`/`JmpFalse`, covering `if`/`else` and `while` loops, including variables
-mutated across branches and iterations. Verified by ~38 cases in
-`shadow_manifest.txt`. Integer arithmetic is lowered as `i64`, matching the VM
-for non-overflowing values (i32 overflow parity is a later tier). Typed-pointer
-syntax (`i64*`) is used so the emitted `.ll` assembles on LLVM 14 as well as 15+.
+mutated across branches and iterations — and **function calls** (direct calls,
+including recursion; `kinglet_fn_<name>` mangling, `main`→`kinglet_user_main`;
+each function lowered to its own `define` with `i64` parameters spilt to
+alloca slots). Verified by ~42 cases in `shadow_manifest.txt`. Integer
+arithmetic is lowered as `i64`, matching the VM for non-overflowing values (i32
+overflow parity is a later tier). Typed-pointer syntax (`i64*`) is used so the
+emitted `.ll` assembles on LLVM 14 as well as 15+.
 
-Deferred: function calls (`kinglet_fn_` mangling + argument ABI), aggregates,
-and errors.
+Deferred: aggregates (structs/arrays/strings), and errors.
