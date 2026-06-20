@@ -86,3 +86,4 @@ draft → accepted → implemented
 | 0020 | [Project manifest (`.nest`) and build targets](0020-project-manifest-and-targets.md) | draft | 2026-06-17 | |
 | 0021 | [References and move semantics](0021-references-and-move.md) | superseded-by [0022](0022-native-unique-ownership.md) | 2026-06-21 | |
 | 0022 | [Native-only toolchain and unique ownership](0022-native-unique-ownership.md) | draft | 2026-06-21 | |
+| 0023 | [Data types, literals, and ABI](0023-data-types-and-abi.md) | draft | 2026-06-21 | |

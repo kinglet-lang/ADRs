@@ -21,6 +21,7 @@ Miscellaneous features from the original bs TODO that don't warrant individual d
 - [ ] `[[nodiscard]]`: warn on unused return values
 - [ ] Struct patterns in match and structured binding
 - [x] Reference types `&T` / `&mut T` and ownership model — **promoted to [0022](0022-native-unique-ownership.md)** (native unique ownership; no move semantics)
+- [x] Data types, literals, struct ABI, wide integers — **promoted to [0023](0023-data-types-and-abi.md)** (P0 self-host gate)
 
 ## Performance (from P5)
 
