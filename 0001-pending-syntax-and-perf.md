@@ -20,11 +20,22 @@ Miscellaneous features from the original bs TODO that don't warrant individual d
 - [ ] Zero-overhead optional: `int? x = null;` with niche optimization
 - [ ] `[[nodiscard]]`: warn on unused return values
 - [ ] Struct patterns in match and structured binding
+- [x] Reference types `&T` / `&mut T` and ownership model — **promoted to [0022](0022-native-unique-ownership.md)** (native unique ownership; no move semantics)
 
 ## Performance (from P5)
 
 - [ ] NaN-boxing migration for Value representation
-- [ ] Trivial relocatability (P1144 / P2786): move as memcpy
+- [x] Trivial relocatability (P1144 / P2786): memcpy transfer for `unique` — **promoted to [0022](0022-native-unique-ownership.md)** (internal analysis; no user `relocatable` keyword)
+
+## Amendments
+
+### 2026-06-21 — Native unique ownership ([0022](0022-native-unique-ownership.md))
+
+Reference types, borrows, and heap ownership are specified in
+[0022](0022-native-unique-ownership.md) (supersedes draft
+[0021](0021-references-and-move.md)). No `move()` keyword; transfer uses `unique T`.
+
+Original §Syntax / §Performance lists above are preserved for historical context.
 
 ## Concurrency (from P4, deferred)
 

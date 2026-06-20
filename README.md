@@ -84,3 +84,5 @@ draft → accepted → implemented
 | 0018 | [Logical module system](0018-logical-module-system.md) | draft | 2026-06-17 | |
 | 0019 | [Self-host LLVM backend](0019-self-host-llvm-backend.md) | accepted (S0 + S1 lowering delivered) | 2026-06-17 | |
 | 0020 | [Project manifest (`.nest`) and build targets](0020-project-manifest-and-targets.md) | draft | 2026-06-17 | |
+| 0021 | [References and move semantics](0021-references-and-move.md) | superseded-by [0022](0022-native-unique-ownership.md) | 2026-06-21 | |
+| 0022 | [Native-only toolchain and unique ownership](0022-native-unique-ownership.md) | draft | 2026-06-21 | |
