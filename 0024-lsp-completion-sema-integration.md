@@ -1,7 +1,8 @@
 # 0024 — LSP Completion: Sema-Backed Field-Access Resolution
 
-- **Status**: draft
+- **Status**: accepted
 - **Proposed**: 2026-07-06
+- **Accepted**: 2026-07-06
 
 ## Context
 
