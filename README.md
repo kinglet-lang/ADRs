@@ -87,3 +87,4 @@ draft → accepted → implemented
 | 0021 | [References and move semantics](0021-references-and-move.md) | superseded-by [0022](0022-native-unique-ownership.md) | 2026-06-21 | |
 | 0022 | [Native-only toolchain and unique ownership](0022-native-unique-ownership.md) | draft | 2026-06-21 | |
 | 0023 | [Data types, literals, and ABI](0023-data-types-and-abi.md) | draft | 2026-06-21 | |
+| 0024 | [LSP completion: Sema-backed field-access resolution](0024-lsp-completion-sema-integration.md) | draft | 2026-07-06 | |
