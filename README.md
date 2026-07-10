@@ -88,3 +88,6 @@ draft → accepted → implemented
 | 0022 | [Native-only toolchain and unique ownership](0022-native-unique-ownership.md) | draft | 2026-06-21 | |
 | 0023 | [Data types, literals, and ABI](0023-data-types-and-abi.md) | draft | 2026-06-21 | |
 | 0024 | [LSP completion: Sema-backed field-access resolution](0024-lsp-completion-sema-integration.md) | accepted | 2026-07-06 | |
+| 0025 | [Namespace-qualified type names](0025-namespace-qualified-type-names.md) | draft | 2026-07-10 | |
+| 0026 | [Standard I/O capability model](0026-standard-io-capability-model.md) | draft | 2026-07-10 | |
+| 0027 | [Filesystem resource API](0027-filesystem-resource-api.md) | draft | 2026-07-10 | |
