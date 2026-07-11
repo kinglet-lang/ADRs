@@ -1,8 +1,10 @@
 # 0008 — KBC Bytecode Format Evolution
 
-- **Status**: implemented
+- **Status**: deprecated (implemented; bytecode path retired by 0022)
 - **Proposed**: 2026-06-02
 - **Completed**: 2026-06-03
+
+**Current replacement**: [0022 — Native-Only Toolchain and Unique Ownership](0022-native-unique-ownership.md). KBC remains historical format documentation only; active compiler output is native LLVM.
 
 ## Context
 
@@ -257,3 +259,17 @@ For each phase:
 - P0 and P1 are backward-compatible (new flag bit, old VMs ignore it gracefully).
 - P2 is the key enabler for self-hosted toolchain independence.
 - P3 requires version negotiation — old VMs cannot read v2 .kbc files.
+
+## Amendments
+
+### 2026-06-20 — Bytecode execution retired by native-only toolchain ([0022](0022-native-unique-ownership.md))
+
+This ADR remains the historical record for the completed KBC format work, but KBC
+is no longer an active compiler output path. Bootstrap commit `ba20344`
+(`refactor(vm): remove VM interpreter and kbc execution paths`, 2026-06-20)
+removed the VM interpreter, KBC execution paths, `--save-bytecode`, and `kinglet-vm`.
+
+A later cleanup removed the remaining dead bytecode container from bootstrap in
+commit `54df929` (`refactor(build): delete dead bytecode container`, 2026-07-10).
+New toolchain work should follow [0022](0022-native-unique-ownership.md) and the
+native LLVM path, not the KBC format.

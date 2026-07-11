@@ -1,7 +1,10 @@
 # 0020 — Project Manifest (`.nest`) and Build Targets
 
-- **Status**: draft
+- **Status**: implemented (target-block layout; earlier dependency/modules layouts deprecated)
 - **Proposed**: 2026-06-17
+- **Completed**: 2026-07-03
+
+**Current replacement for earlier layouts**: the implemented target-block `kinglet.nest` layout in the 2026-07-03 amendment below supersedes the original `dependency`/`binary` lines and intermediate `modules {}` / grouped `targets {}` examples. Source-level module identity is defined by [0018 — Logical Module System](0018-logical-module-system.md).
 
 ## Context
 
@@ -229,3 +232,37 @@ Amendment 2026-06-17 (runtime model).
 the recommended style for new `kinglet.nest` files.
 
 Original §D2 text above is preserved for historical context.
+
+### 2026-07-03 — Target blocks and source-declared module identity implemented
+
+The implemented `kinglet.nest` layout differs from both the original flat
+`dependency`/`binary` lines and the intermediate `modules {}` / `targets {}`
+layout above. Bootstrap commit `c3fef16` (`feat(nest): target-based manifest with
+C++20-style module resolution`, 2026-07-03) replaced the manifest-owned module
+map with explicit target blocks:
+
+```nest
+project "myapp" version "0.1.0"
+
+target app {
+  kind    = "binary"
+  sources = ["src/main.kl", "src/math.kl"]
+}
+
+build {
+  default = "app"
+}
+```
+
+Module identity now lives in source files (`export module ...;` / `import ...;`),
+not in a manifest `modules {}` table. The manifest declares build targets, their
+source files, optional deps, and build/fmt settings. Earlier `dependency`,
+`modules`, and grouped `targets` examples are deprecated historical forms.
+
+Related implementation landmarks:
+
+- `1118333` (2026-06-20): load project config from `kinglet.nest` only.
+- `c7dc3ec` (2026-06-20): use `kinglet.nest` for `init`, `build`, `fmt`, and
+  `run`.
+- `c3fef16` (2026-07-03): target-block manifest with source-declared module
+  identity.

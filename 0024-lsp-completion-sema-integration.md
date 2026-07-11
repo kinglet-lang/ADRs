@@ -1,8 +1,9 @@
 # 0024 — LSP Completion: Sema-Backed Field-Access Resolution
 
-- **Status**: accepted
+- **Status**: implemented
 - **Proposed**: 2026-07-06
 - **Accepted**: 2026-07-06
+- **Completed**: 2026-07-06
 
 ## Context
 
@@ -138,3 +139,16 @@ this ADR's acceptance, but blocking C2's start):
   contributor count grows beyond the current single-developer scale, revisit
   Phase A/B — the drift risk they address becomes real again once more than
   one person is adding language features without also touching perch.
+
+## Amendments
+
+### 2026-07-06 — Implementation landed
+
+Bootstrap landed the sema-backed completion path in commit `7eb48e1`
+(`feat(sema): wire TypeChecker into LSP completion via CompletionMarkerExpr`,
+2026-07-06), building on the 2026-07-05 parser and AST completion-marker commits.
+Perch then integrated the bootstrap submodule and shipped the related LSP
+regression/fix series on 2026-07-06, including completion gap fixes and
+top-level keyword filtering.
+
+Original sections above are preserved for historical context.

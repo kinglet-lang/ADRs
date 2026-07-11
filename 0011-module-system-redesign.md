@@ -1,8 +1,10 @@
 # 0011 — Module System Redesign
 
-- **Status**: implemented
+- **Status**: deprecated (core retained; syntax superseded by [0018](0018-logical-module-system.md))
 - **Proposed**: 2026-06-03
 - **Completed**: 2026-06-04
+
+**Current replacement**: [0018 — Logical Module System](0018-logical-module-system.md) for source syntax and module identity. This ADR still records retained rules for singleton loading, non-transitive imports, `pub` visibility, and circular-import errors.
 
 ## Context
 
@@ -146,3 +148,16 @@ The **import syntax** and **namespace naming** in §Decision are superseded for 
 
 Original sections above are preserved for historical context and for code still on
 the 0011 syntax until migration completes.
+
+### 2026-06-20 — 0011 import-block syntax removed after 0018 migration ([0018](0018-logical-module-system.md))
+
+The singleton loading, non-transitive import, `pub` visibility, and circular-import
+rules remain retained, but the `import { "path.kl" }` syntax from this ADR is no
+longer current. Bootstrap implemented logical modules and then removed the import
+block syntax by commit `8ce52de` (`fix(parser,checker): complete T1 import and
+using namespace rules`, 2026-06-20). The parser now reports that import block
+syntax is removed and directs users to `import module-id;`.
+
+For new source, use [0018](0018-logical-module-system.md): `export module`,
+`import <module-id>;`, `using <alias> = <module-id>;`, and `using namespace
+<module-id>;`.
