@@ -1,7 +1,10 @@
 # 0018 — Logical Module System
 
-- **Status**: draft
+- **Status**: implemented (source-level modules; manifest shape amended by [0020](0020-project-manifest-and-targets.md))
 - **Proposed**: 2026-06-17
+- **Completed**: 2026-06-20
+
+**Current refinement**: [0020 — Project Manifest (`.nest`) and Build Targets](0020-project-manifest-and-targets.md) replaces this ADR's earlier manifest-owned `modules {}` mapping with target blocks and source-declared module identity.
 
 ## Context
 
@@ -259,3 +262,26 @@ self-host sources → remove `using { }` and `using ::*` parsing.
 
 Original §D1–D3 and §D5 rows for `using ast { … }` / `using ast::*` above are preserved
 for historical context.
+
+### 2026-06-20 — Implemented in bootstrap; source-level modules are current
+
+Bootstrap landed the source-level module model in the 2026-06-17 through
+2026-06-20 change series: dotted module ids, `export module`, `import
+<module-id>;`, module aliases, and `using namespace <module-id>;`. The current
+parser and module loader contain `parse_module_id`, `UsingAliasDecl`,
+`module_id_to_qualifier`, and `ModuleLoader::resolve_logical`; import block syntax
+is rejected with a diagnostic that points users to `import module-id;`.
+
+Implementation landmarks:
+
+- `34a5d44` (2026-06-17): `export module`, logical import, and wildcard import
+  parsing.
+- `e133309` / `d745adc` / `ec790ec` (2026-06-17): hierarchical module ids,
+  checker resolution, and compiler resolution.
+- `8ce52de` (2026-06-20): completed T1 import and `using namespace` rules and
+  rejected selective platform using blocks.
+
+The manifest mapping shape described in earlier sections was later changed by
+[0020](0020-project-manifest-and-targets.md): current `kinglet.nest` declares
+build targets and source lists, while `export module` in source provides module
+identity.

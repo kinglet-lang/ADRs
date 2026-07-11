@@ -1,7 +1,9 @@
 # 0023 — Data Types, Literals, and ABI
 
-- **Status**: draft
+- **Status**: accepted (P0 slices partial)
 - **Proposed**: 2026-06-21
+
+**Current companion**: [0022 — Native-Only Toolchain and Unique Ownership](0022-native-unique-ownership.md) defines ownership and borrows; this ADR defines scalar/data/ABI details for that native-only model.
 
 ## Context
 
@@ -305,3 +307,20 @@ Bootstrap leads T1–T4; self-host tracks per slice.
 2. **`char` vs `int` for `string[i]`** — defer to P1 or lock in v1?
 3. **Padding** — explicit `{i32, i32}` vs packed structs for compiler tables.
 4. **Promotion rules** — full 0015 D7 table vs minimal `int32`/`int64` for T6.
+
+## Amendments
+
+### 2026-06-21 — P0 slices landed for self-host native debugging
+
+This ADR is accepted as the current type/literal/ABI direction, but remains partial.
+The self-host repository landed early P0 slices on 2026-06-20 and 2026-06-21:
+
+- `6a17c95` (2026-06-20): `FuncEntry` accessors for cross-module native ABI.
+- `5b123ad` (2026-06-20): stable integer ordinals for `Type.kind`.
+- `1e26a49` (2026-06-21): wide `u64` hex and enum wire helpers.
+
+Those commits cover pieces of D3 and D10 needed by the native self-host chain.
+The full ADR is not implemented: D9 cross-module struct ABI, the full fixed-width
+numeric surface, complete enum representation cleanup, and the P0 acceptance gates
+in D14 still require separate verification before this ADR can be marked
+implemented.

@@ -1,8 +1,10 @@
 # 0003 — Standard Library Roadmap
 
-- **Status**: accepted (phased)
+- **Status**: accepted (phased; io/fs refined by 0026/0027)
 - **Proposed**: 2026-05-29
 - **Revised**: 2026-06-15
+
+**Current refinements**: [0026 — Standard I/O Capability Model](0026-standard-io-capability-model.md) and [0027 — Filesystem Resource API](0027-filesystem-resource-api.md) define the current `io` and `fs` public surfaces; this ADR remains the umbrella roadmap.
 
 ## Context
 
@@ -313,3 +315,17 @@ transition; removed when compiler injects platform namespaces without prelude
 
 Original §Three-layer model and §Directory layout text above are preserved for
 historical context.
+
+### 2026-07-10 — Standard I/O and filesystem surface refined ([0026](0026-standard-io-capability-model.md), [0027](0027-filesystem-resource-api.md))
+
+The platform I/O roadmap remains the umbrella decision, but the concrete public
+surfaces for `io` and `fs` are refined by later ADRs:
+
+- [0026](0026-standard-io-capability-model.md) defines the `io::reader` /
+  `io::writer` capability model while preserving existing `io::in`, `io::out`,
+  and `io::err` behaviour.
+- [0027](0027-filesystem-resource-api.md) defines `fs::file` and the resource API
+  over the current hardcoded `fs::__read`, `fs::__write`, and `fs::__listdir`
+  intrinsic surface.
+
+Original roadmap sections above are preserved for historical context.

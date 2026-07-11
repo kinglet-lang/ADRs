@@ -1,8 +1,10 @@
 # 0010 — VM Redesign and Embedded Self-Host Binary
 
-- **Status**: implemented (Part 1); Part 2 deferred — superseded by [0014](0014-compilation-toolchain-architecture.md) D6
+- **Status**: deprecated (Part 1 implemented; active VM path retired by [0022](0022-native-unique-ownership.md)); Part 2 deferred — superseded by [0014](0014-compilation-toolchain-architecture.md) D6
 - **Proposed**: 2026-06-03
 - **Completed**: 2026-06-08 (Part 1 — `backend/vm` RC/COW value model)
+
+**Current replacement**: [0022 — Native-Only Toolchain and Unique Ownership](0022-native-unique-ownership.md) for the retired VM execution path; [0014 — Compilation Toolchain Architecture](0014-compilation-toolchain-architecture.md) D6 for the deferred embedded self-host binary direction.
 
 ## Context
 
@@ -90,3 +92,12 @@ Prerequisite: Part 1 must land first, since the embedded compiler needs to handl
 - None for Part 1 (standalone VM change).
 - Part 1 unblocks: Shadow compiler usability, REPL, constexpr evaluation, sandbox execution.
 - Part 2 follow-up: [0014](0014-compilation-toolchain-architecture.md) M0–M3 (Klos, native toolchain).
+
+### 2026-06-20 — VM path retired by native-only toolchain ([0022](0022-native-unique-ownership.md))
+
+Part 1 was implemented on 2026-06-08 and remains historical context for the RC/COW
+VM value model. The active VM/KBC execution path was retired by bootstrap commit
+`ba20344` (`refactor(vm): remove VM interpreter and kbc execution paths`,
+2026-06-20), which deleted `kinglet-vm`, VM execution, `--save-bytecode`, and the
+REPL. Current language and toolchain design targets the native LLVM backend per
+[0022](0022-native-unique-ownership.md).

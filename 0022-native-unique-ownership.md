@@ -1,7 +1,9 @@
 # 0022 — Native-Only Toolchain and Unique Ownership
 
-- **Status**: draft
+- **Status**: accepted (N0 native-only implemented 2026-06-20; ownership phases pending)
 - **Proposed**: 2026-06-21
+
+**Replaces**: [0021 — References and Move Semantics](0021-references-and-move.md), and retires the bytecode/VM paths documented by [0008](0008-kbc-format-evolution.md), [0010](0010-vm-redesign.md), and [0013](0013-bootstrap-bytecode-delta.md).
 
 ## Context
 
@@ -328,3 +330,23 @@ blocked on N1–N7** — VM removal lands with ADR acceptance.
    heap+clone pressure (implementation, not language).
 3. **0002 formal amendment** — separate one-paragraph amendment entry vs inline D13
    only (recommend: add Amendments section to 0002 when N1 lands).
+
+## Amendments
+
+### 2026-06-20 — N0 native-only toolchain implemented; ownership phases remain open
+
+D1/N0 is implemented in bootstrap. Commit `ba20344` (`refactor(vm): remove VM
+interpreter and kbc execution paths`, 2026-06-20) deleted `kinglet-vm`, VM/COW
+runtime execution, `--save-bytecode`, REPL support, and VM run paths. Default file
+execution now compiles through LLVM and runs the native binary; `kinglet build`
+accepts only the native backend.
+
+The later bytecode-retirement cleanup continued through `ea4f69a` (2026-07-09,
+rename `backend/vm` to `backend/bytecode`) and `54df929` (2026-07-10, delete the
+dead bytecode container). The repository still retains IR names and historical
+documentation where they are load-bearing or useful for context.
+
+The ownership phases N1-N7 are not complete: current bootstrap has partial borrow
+syntax/checking (`&T` and `&mut T` machinery), but no implemented `unique T`
+consumption model, KIR `Drop`, `kl_drop_*` / clone API set, or complete unique heap
+semantics.
