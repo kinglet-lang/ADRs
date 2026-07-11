@@ -1,7 +1,16 @@
 # 0025 — Namespace-Qualified Type Names
 
-- **Status**: draft
+- **Status**: implemented
 - **Proposed**: 2026-07-10
+- **Completed**: 2026-07-11
+
+**Implementation**: [kinglet-lang/bootstrap#89](https://github.com/kinglet-lang/bootstrap/pull/89)
+(commit `6293db3`) — parser accepts `::`-qualified type names in type
+position, the checker canonicalizes qualified names through module aliases,
+and imported struct/enum types resolve to the same type under either their
+bare or qualified spelling. Covered by `tests/abi/qualified_type_name/`,
+`tests/parser/cases/qualified_type_names_ast.kl`, and
+`tests/sema/fail/qualified_type_unknown.kl`.
 
 ## Context
 
