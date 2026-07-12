@@ -105,7 +105,7 @@ Ownership behaviour is defined per **type category**, established in
 |----------|----------|----------------------|
 | **Scalar (Copy)** | `int8`…`int64`, `uint8`…`uint64`, `float32`, `float64`, `bool`, `char` | Always copies; never transfers; no heap backing |
 | **Value type (heap-backed)** | `string`, `T[]`, `map<K,V>` | Copies on plain assignment; transfers only at call boundaries (D4) |
-| **Resource type** | `box<T>`, `fs::file`, `net::tcpstream`, `mutex`, user-defined non-cloneable types | Always transfers; no clone exists |
+| **Resource type** | `box<T>`, user-defined structs declaring `@destroy` (see D6) | Always transfers; no clone exists |
 
 A type's category is a property of the type itself (declared in 0029), not of
 how it is used at a call site. The rules below apply this classification
@@ -278,31 +278,80 @@ io::out.line(a);   // "hi" — unaffected
 Avoiding the copy for a plain local-to-local binding requires the explicit
 `move()` stdlib function (D9), not a new operator.
 
-### D6 — Resource types: always transfer, no clone exists
+### D6 — Resource types: `@destroy` structs are move-only
 
-Resource types (`box<T>`, `fs::file`, `net::tcpstream`, `mutex`, `thread`, and
-user-defined types that opt out of cloning) have no meaningful copy
-operation — duplicating a file descriptor or a lock handle is not "the same
-value in two places" the way duplicating a string's bytes is. For these
-types, **every** plain assignment and every bare-typed call boundary is a
-transfer:
+A struct declaring `@destroy` is a **resource type** — every plain assignment
+and every bare-typed call boundary transfers ownership. The compiler
+recognises a struct as a resource type by the presence of `@destroy`, not by
+a separate keyword or qualifier:
 
 ```kl
-box<Node> a = box(Node{});
-box<Node> b = a;    // transfer: a has no clone to fall back to
-sink(a);             // ERROR: a already transferred to b
+// Value type — no @destroy, field-wise Copy (D5):
+struct Fd {
+    int value;
+}
+
+// Resource type — has @destroy, move-only:
+struct File {
+    private Fd fd;
+
+    @init(const string& path) {
+        fd = sys::open(path);
+    }
+
+    @destroy {
+        sys::close(fd.value);
+    }
+}
 ```
+
+A struct without `@destroy` is a **value type** and is Copy-by-default (D5).
+`Fd` wraps an integer and needs no cleanup, so it is a value type. `File`
+wraps a kernel handle that must be released, so it declares `@destroy` and
+becomes move-only.
+
+For resource types, **every** plain assignment and every bare-typed call
+boundary is a transfer:
+
+```kl
+File a = File{"data.txt"};
+File b = a;          // transfer: a moved to b
+use(a);               // ERROR: a was transferred
+sink(a);              // ERROR: a already transferred to b
+```
+
+`@init(params)` declares a constructor called at the construction site
+(e.g. `File{"data.txt"}` resolves to `@init(const string& path)`). `@destroy`
+is invoked at scope exit (D8). `private` on a field restricts direct access
+from outside the struct.
 
 This does not reintroduce the cross-branch dataflow problem from the Context
 section, because the set of types subject to "assignment is always transfer"
-is a **short, explicit, closed list of resource types** declared in 0029, not
-"every heap type" — the common case (`string`, `T[]`, `map`) stays on the
-simple copy-by-default rule (D5), and only code that opts into a resource
-type takes on consumed-state tracking for that variable.
+is defined by a single syntactic marker (`@destroy`) that is trivially
+visible to the checker — no general dataflow analysis is needed, and the
+common case (`string`, `T[]`, `map`, and structs without `@destroy`) stays on
+the copy-by-default rule (D5).
 
-A `T&` / `const T&` parameter on a resource type is still just a borrow (D5's
-sibling rule) and does not transfer — only bare `T` parameters and plain
-assignment transfer for this category.
+A `T&` / `const T&` parameter on a resource type is still just a borrow and
+does not transfer — only bare `T` parameters and plain assignment transfer
+for this category.
+
+When an explicit copy is needed, the struct provides a named method (e.g.
+`duplicate()`):
+
+```kl
+struct File {
+    private Fd fd;
+
+    @destroy { sys::close(fd.value); }
+
+    File duplicate() const {
+        // uses dup() or equivalent OS API
+    }
+}
+
+File b = a.duplicate();  // explicit copy, no transfer
+```
 
 ### D7 — `mut` is removed; `const` is overloaded across two independent axes
 
@@ -633,11 +682,9 @@ reader needs to open either historical file to understand current behaviour.
 1. **Runtime clone API naming** — `kl_clone_string` / `kl_clone_array` /
    `kl_clone_map` vs. a single generic `kl_clone(kl_h)` dispatch; carried over
    unresolved from 0022 D9.
-2. **Resource-type opt-out spelling** — how a user-defined struct declares
-   itself as a resource type (no clone) rather than a value type; this ADR
-   assumes the distinction exists (D1/D6) but does not specify the
-   declaration syntax, which belongs in [0029](0029-value-representation-and-memory-layout.md)
-   or a follow-up.
+2. **Resource-type declaration syntax** — resolved by D6: a user-defined struct
+   becomes a resource type by declaring `@destroy`. A struct without
+   `@destroy` is a value type with field-wise Copy.
 3. **`own T` fallback** — if bare-`T`-transfers-at-call-boundary (D4) proves
    too implicit in practice, D3's rejected `own T` alternative is the
    documented fallback; revisit after real usage, not preemptively.
