@@ -1,9 +1,27 @@
 # 0023 — Data Types, Literals, and ABI
 
-- **Status**: accepted (P0 slices partial)
+- **Status**: superseded-by [0029](0029-value-representation-and-memory-layout.md)
 - **Proposed**: 2026-06-21
 
-**Current companion**: [0022 — Native-Only Toolchain and Unique Ownership](0022-native-unique-ownership.md) defines ownership and borrows; this ADR defines scalar/data/ABI details for that native-only model.
+**Current companion**: [0022 — Native-Only Toolchain and Unique Ownership](%5Bdeprecated%5D%200022-native-unique-ownership.md) defines ownership and borrows; this ADR defines scalar/data/ABI details for that native-only model.
+
+## Amendments
+
+### 2026-07-11 — Superseded by value representation and memory layout ([0029](0029-value-representation-and-memory-layout.md))
+
+This ADR is **superseded in full** for its type-tier and layout decisions
+(D1 type tiers, D9 struct ABI, D11 native wire format) by
+[0029 — Value Representation and Memory Layout](0029-value-representation-and-memory-layout.md),
+which settles struct and fixed-size arrays as **stack-inline** rather than
+heap-backed (this document's D1/D9 left that ambiguous, and actual bootstrap
+behaviour defaulted to heap allocation), and fixes `float`/`float64` to be a
+genuinely inline scalar rather than heap-boxed (D6.4 in this document
+documented the boxed behaviour without justifying it as intentional). The
+literal syntax and fixed-width numeric table (D2–D8, D10, D12) carry forward
+unchanged and are restated in full in 0029 so no reader needs to open this
+file to understand current behaviour.
+
+Original sections below are preserved for historical context.
 
 ## Context
 
@@ -18,7 +36,7 @@ on:
 - **64-bit constants** (`0xFFFD000000000000`) and `(hi << 32) | lo` in Kinglet source;
 - **`int::bits(float)`** for LLVM hex emission.
 
-[0022](0022-native-unique-ownership.md) covers **ownership and borrows** on native;
+[0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) covers **ownership and borrows** on native;
 this ADR is the companion for **what the types are**, **how literals parse**, and
 **how values are laid out in memory and on the wire**. Together they form the **P0
 self-host gate** agreed for language work before further stdlib or prove expansion.
@@ -34,9 +52,9 @@ width opcode matrix — scheduled in phases below, not all in v1 of this ADR.
 | Tier | Types | Role |
 |------|-------|------|
 | **Scalars (Copy)** | `bool`, `byte`, `char`, `int`, fixed-width integers (D2), `float`/`double` + fixed floats (D2) | Stack slots, bitwise copy, no ownership |
-| **Handles (unique heap)** | `string`, `T[]`, `map<…>` | Opaque owning wire per [0022](0022-native-unique-ownership.md) D2 |
+| **Handles (unique heap)** | `string`, `T[]`, `map<…>` | Opaque owning wire per [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) D2 |
 | **Aggregates** | `struct`, `enum` | Layout rules in D9–D10; may contain scalars and handles |
-| **Borrows** | `&T`, `&mut T` | Non-owning aliases per [0022](0022-native-unique-ownership.md) D3 |
+| **Borrows** | `&T`, `&mut T` | Non-owning aliases per [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) D3 |
 | **Transfer** | `unique T` | Consumption at API boundary per 0022 D4 |
 
 `void` is not a value type. `auto` defers to initializer type (D12).
@@ -128,7 +146,7 @@ source; plain `int` and `0xFFFD0000` are unreliable (signed truncation, no full
    pattern of `x` (quiet NaNs preserved). **Required for self-host LLVM emission**
    (`double 0x…` literals).
 3. **`float::from_bits(uint64)`** (or `double::from_bits`) is the inverse; **native
-   and semantic reference must match** (no VM-only paths after [0022](0022-native-unique-ownership.md) D1).
+   and semantic reference must match** (no VM-only paths after [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) D1).
 4. Runtime float values remain **boxed heap handles** on the wire (`0xFFFE<<48` tag)
    until a future unboxed float stack path lands; **bits intrinsics operate on the
    IEEE value**, not the wire handle.
@@ -226,7 +244,7 @@ on copy (0022).
 - `auto` without initializer is ill-formed.
 - Inference never widens to borrow; `auto` from `&expr` is `&T` when references land.
 
-### D13 — Relationship to [0022](0022-native-unique-ownership.md)
+### D13 — Relationship to [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)
 
 | Topic | ADR |
 |-------|-----|
@@ -241,7 +259,7 @@ Implement **D9 + D10 + D3** before **0022 N4–N6** in the self-host critical pa
 
 | ID | Deliverable | Exit criterion |
 |----|-------------|----------------|
-| **P0-0** | **Delete VM execution backend** ([0022](0022-native-unique-ownership.md) D1) | no `--run` / `--backend vm` / `kinglet-vm`; tests use native compiler binary |
+| **P0-0** | **Delete VM execution backend** ([0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) D1) | no `--run` / `--backend vm` / `kinglet-vm`; tests use native compiler binary |
 | **T0** | This ADR accepted | — |
 | **T1** | Struct ABI in bootstrap `kir_to_llvm` + tests | cross-module struct copy golden |
 | **T1** | Same ABI in `ll_emit.kl` | struct field read test native |
@@ -263,7 +281,7 @@ Bootstrap leads T1–T4; self-host tracks per slice.
 | [0015](0015-llvm-backend-roadmap.md) D7 | Full width table **normative here**; implementation schedule in D14 |
 | [0016](0016-typed-kir.md) | Phase 2b open items **tracked under D14 T4** |
 | [0002](0002-design-principles.md) | Scalars Copy; heap + struct layout per 0023 + 0022 |
-| [0022](0022-native-unique-ownership.md) | Ownership on types defined in this ADR |
+| [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) | Ownership on types defined in this ADR |
 
 ## Consequences
 
@@ -293,7 +311,7 @@ Bootstrap leads T1–T4; self-host tracks per slice.
 
 - [0002](0002-design-principles.md), [0005](0005-backend-architecture.md)
 - [0015](0015-llvm-backend-roadmap.md), [0016](0016-typed-kir.md), [0017](0017-dense-nested-array-layout.md)
-- [0022](0022-native-unique-ownership.md)
+- [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)
 
 ## References
 

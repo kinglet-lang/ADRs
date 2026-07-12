@@ -4,7 +4,7 @@
 - **Proposed**: 2026-06-02
 - **Completed**: 2026-06-03
 
-**Current replacement**: [0022 — Native-Only Toolchain and Unique Ownership](0022-native-unique-ownership.md). KBC remains historical format documentation only; active compiler output is native LLVM.
+**Current replacement**: [0022 — Native-Only Toolchain and Unique Ownership](%5Bdeprecated%5D%200022-native-unique-ownership.md). KBC remains historical format documentation only; active compiler output is native LLVM.
 
 ## Context
 
@@ -262,7 +262,7 @@ For each phase:
 
 ## Amendments
 
-### 2026-06-20 — Bytecode execution retired by native-only toolchain ([0022](0022-native-unique-ownership.md))
+### 2026-06-20 — Bytecode execution retired by native-only toolchain ([0022](%5Bdeprecated%5D%200022-native-unique-ownership.md))
 
 This ADR remains the historical record for the completed KBC format work, but KBC
 is no longer an active compiler output path. Bootstrap commit `ba20344`
@@ -271,5 +271,5 @@ removed the VM interpreter, KBC execution paths, `--save-bytecode`, and `kinglet
 
 A later cleanup removed the remaining dead bytecode container from bootstrap in
 commit `54df929` (`refactor(build): delete dead bytecode container`, 2026-07-10).
-New toolchain work should follow [0022](0022-native-unique-ownership.md) and the
+New toolchain work should follow [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) and the
 native LLVM path, not the KBC format.

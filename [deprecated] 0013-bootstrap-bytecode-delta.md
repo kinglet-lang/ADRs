@@ -1,10 +1,10 @@
 # 0013 — Bootstrap Bytecode Parity
 
-- **Status**: deprecated (implemented; bytecode parity retired by [0022](0022-native-unique-ownership.md))
+- **Status**: deprecated (implemented; bytecode parity retired by [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md))
 - **Proposed**: 2026-06-08
 - **Completed**: 2026-06-09
 
-**Current replacement**: [0022 — Native-Only Toolchain and Unique Ownership](0022-native-unique-ownership.md). Byte-identical KBC parity is retired; current validation compares native behaviour.
+**Current replacement**: [0022 — Native-Only Toolchain and Unique Ownership](%5Bdeprecated%5D%200022-native-unique-ownership.md). Byte-identical KBC parity is retired; current validation compares native behaviour.
 
 ## Context
 
@@ -76,10 +76,10 @@ cases (guard, pipe, generics) may still differ in bytecode while behavior matche
 
 ## Amendments
 
-### 2026-06-20 — Bytecode parity retired by native-only validation ([0022](0022-native-unique-ownership.md))
+### 2026-06-20 — Bytecode parity retired by native-only validation ([0022](%5Bdeprecated%5D%200022-native-unique-ownership.md))
 
 This ADR was implemented for the bytecode era, but byte-identical KBC parity is no
-longer an active validation target. [0022](0022-native-unique-ownership.md) retires
+longer an active validation target. [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) retires
 VM/KBC validation in favour of native behavioural comparison. Bootstrap commit
 `ba20344` (`refactor(vm): remove VM interpreter and kbc execution paths`,
 2026-06-20) removed the VM interpreter and KBC execution path; commit `54df929`

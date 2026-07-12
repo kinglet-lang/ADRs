@@ -1,9 +1,27 @@
 # 0022 — Native-Only Toolchain and Unique Ownership
 
-- **Status**: accepted (N0 native-only implemented 2026-06-20; ownership phases pending)
+- **Status**: superseded-by [0028](0028-ownership-and-value-transfer.md)
 - **Proposed**: 2026-06-21
 
 **Replaces**: [0021 — References and Move Semantics](%5Bdeprecated%5D%200021-references-and-move.md), and retires the bytecode/VM paths documented by [0008](%5Bdeprecated%5D%200008-kbc-format-evolution.md), [0010](%5Bdeprecated%5D%200010-vm-redesign.md), and [0013](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md).
+
+## Amendments
+
+### 2026-07-11 — Superseded by ownership, borrowing, and value transfer ([0028](0028-ownership-and-value-transfer.md))
+
+This ADR is **superseded in full** by
+[0028 — Ownership, Borrowing, and Value Transfer](0028-ownership-and-value-transfer.md),
+except for **D1 (native-only toolchain)**, which is already implemented and is
+carried forward unchanged (0028 D0). Everything else — D2 clone-on-assignment,
+D3/D4 `&T`/`&mut T`/`unique T` syntax, D5 borrowing rules, D6 consumed state,
+D7 drop, D9 runtime clone API — is replaced. 0028 restates the borrowing and
+drop rules in full so no reader needs to open this file to understand current
+behaviour; the D2/D4 assignment-and-transfer model changes substantively
+(0028 D4–D6 replace the clone-on-assignment default with copy-for-value-types
+/ transfer-for-resource-types, and move transfer to call boundaries instead
+of a `unique T` qualifier).
+
+Original sections below are preserved for historical context.
 
 ## Context
 

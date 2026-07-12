@@ -1,16 +1,16 @@
 # 0021 — References and Move Semantics
 
-- **Status**: superseded-by [0022](0022-native-unique-ownership.md)
+- **Status**: superseded-by [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)
 - **Proposed**: 2026-06-21
 
 ## Amendments
 
-### 2026-06-21 — Superseded by native unique ownership ([0022](0022-native-unique-ownership.md))
+### 2026-06-21 — Superseded by native unique ownership ([0022](%5Bdeprecated%5D%200022-native-unique-ownership.md))
 
 This draft is **withdrawn**. Kinglet no longer designs language features for the
 VM backend; implicit move semantics and COW-based copy are replaced by **native-only
 unique ownership**, **`&` / `&mut` borrows**, **`unique T` transfer**, and **scope
-`drop`**. See [0022](0022-native-unique-ownership.md).
+`drop`**. See [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md).
 
 Original sections below are preserved for historical context.
 
