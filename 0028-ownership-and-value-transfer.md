@@ -131,9 +131,11 @@ types (D4). Scalars are exempt. This is a hard rule, stated explicitly to
 avoid readers over-generalizing "bare parameter type == transfer" to every
 type in the language.
 
-### D3 — Syntax: `T`, `const T&`, `T&` — no new sigils
+### D3 — Syntax: `T`, `const T&`, `T&` — no new sigils, no call-site marker
 
-The surface syntax uses only symbols already in the language:
+The surface syntax uses only symbols already in the language, and `&`/`&mut`
+are removed from expression position entirely — they now appear **only** in
+type position:
 
 ```kl
 void sink(string s);              // transfer: caller loses ownership
@@ -143,6 +145,38 @@ void update(string& s);           // exclusive borrow: read/write, caller keeps 
 
 `const T&` replaces 0022's `&T`; `T&` (no `mut`) replaces 0022's `&mut T`. The
 `mut` pseudo-keyword is **removed** (D7). There is no `unique T` and no `&&T`.
+
+Call sites and local reference-declaration initializers pass a **bare
+identifier** — there is no `&`/`&mut` marker at the call site or on the
+right-hand side of an initializer. Which of transfer / shared borrow /
+exclusive borrow applies is determined entirely by the **declared type on
+the receiving side** (the callee's parameter type, or the reference
+variable's declared type), not by anything written at the use site:
+
+```kl
+string a = "hello";
+inspect(a);   // inspect's parameter is `const string&` -> shared borrow, a stays valid
+update(a);    // update's parameter is `string&`         -> exclusive borrow, a stays valid (content may change)
+sink(a);      // sink's parameter is bare `string`        -> transfer, a is invalidated
+
+const string& v = a;   // v's declared type is a reference -> shared borrow, no & on the right
+```
+
+This means `&`/`&mut` as prefix **expression** operators (the current
+`UnaryOp::Ref` / `UnaryOp::MutRef` production in `unary()`) are removed
+entirely once this ADR's syntax lands — `&`/`&mut` become pure type-position
+syntax with no expression-level counterpart. See D4 for how this shifts
+borrow/transfer classification from the call-argument AST node (today) to
+the callee's declared parameter type.
+
+This trades away one form of call-site legibility (C++ has the same
+property, and is frequently criticized for it: `f(a)` alone does not show
+whether `a` is read, mutated, or consumed without checking `f`'s signature)
+in exchange for eliminating symbol noise at every call and matching established
+reference-passing convention. The mitigation is tooling, not syntax: IDE
+hover/inlay hints and diagnostics surface a parameter's `const T&` / `T&` /
+bare `T` classification at the call site without requiring it to be written
+there.
 
 **Alternatives considered and rejected:**
 
@@ -362,20 +396,41 @@ original file is deprecated and this is now the canonical text.
 
 **Escape (forbidden in all cases):**
 
-- `return &local;` or returning any borrow of a stack slot that does not
-  outlive the callee.
+- `return` of a reference-typed value that borrows a stack slot not outliving
+  the callee.
 - Storing a borrow into a struct field, global, or any container that may
   outlive the referent (reference-typed struct members remain deferred, as in
   0021/0022).
-- Borrowing a temporary / rvalue (`const string& v = &make_node();` is
-  ill-formed — bind to a named local first).
+
+**Temporary / rvalue binding (asymmetric between the two borrow kinds):**
+
+- `const T&` binding a temporary is **allowed** — the temporary's lifetime is
+  extended to the enclosing scope of the reference, the same materialization
+  + lifetime-extension rule C++ uses for `const T&` binding an rvalue. This is
+  safe because the borrow is read-only for its entire duration; there is no
+  externally-observable mutation for anything to miss.
+
+  ```kl
+  const string& v = make_node();   // OK: make_node()'s temporary result lives
+                                     // as long as v does
+  ```
+
+- `T&` (exclusive) binding a temporary is **ill-formed, rejected at compile
+  time**. An exclusive borrow's entire point is that the caller can later
+  observe the mutation through the same named binding it borrowed from; a
+  temporary has no such named binding to observe through, so a `T&` on one is
+  a well-typed no-op at best and almost always signals a design or typo error.
+
+  ```kl
+  string& v = make_node();   // ERROR: cannot take an exclusive borrow of a temporary
+  ```
 
 **Non-lexical borrow duration:** borrow lifetime follows last actual use, not
 lexical scope end — carried forward from 0021 §7.4 / 0022 D5's intent (no
 change; both prior drafts already agreed on this point).
 
 ```kl
-const string& view = &name;
+const string& view = name;
 io::out.line(view);
 // last use of view is the line above
 name.clear();   // valid — view's borrow already ended
