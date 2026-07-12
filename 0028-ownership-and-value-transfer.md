@@ -305,8 +305,11 @@ struct File {
 }
 ```
 
-A struct without `@destroy` is a **value type** and is Copy-by-default (D5).
-`Fd` wraps an integer and needs no cleanup, so it is a value type. `File`
+Both `@init` and `@destroy` are optional — when omitted the compiler generates
+a trivial default. A struct without `@destroy` is a **value type** and is
+Copy-by-default (D5); the compiler-generated no-op destructor is not a
+`@destroy` for the purpose of this classification. `Fd` wraps an integer and
+needs no cleanup, so it omits both annotations and is a value type. `File`
 wraps a kernel handle that must be released, so it declares `@destroy` and
 becomes move-only.
 
