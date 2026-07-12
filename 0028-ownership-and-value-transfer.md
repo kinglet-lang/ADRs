@@ -131,11 +131,9 @@ types (D4). Scalars are exempt. This is a hard rule, stated explicitly to
 avoid readers over-generalizing "bare parameter type == transfer" to every
 type in the language.
 
-### D3 — Syntax: `T`, `const T&`, `T&` — no new sigils, no call-site marker
+### D3 — Syntax: `T`, `const T&`, `T&` — no new sigils, `&expr` optional at the use site
 
-The surface syntax uses only symbols already in the language, and `&`/`&mut`
-are removed from expression position entirely — they now appear **only** in
-type position:
+The surface syntax uses only symbols already in the language:
 
 ```kl
 void sink(string s);              // transfer: caller loses ownership
@@ -146,37 +144,51 @@ void update(string& s);           // exclusive borrow: read/write, caller keeps 
 `const T&` replaces 0022's `&T`; `T&` (no `mut`) replaces 0022's `&mut T`. The
 `mut` pseudo-keyword is **removed** (D7). There is no `unique T` and no `&&T`.
 
-Call sites and local reference-declaration initializers pass a **bare
-identifier** — there is no `&`/`&mut` marker at the call site or on the
-right-hand side of an initializer. Which of transfer / shared borrow /
-exclusive borrow applies is determined entirely by the **declared type on
-the receiving side** (the callee's parameter type, or the reference
-variable's declared type), not by anything written at the use site:
+**Call sites and local reference-declaration initializers accept a bare
+identifier; `&expr` remains legal but is now purely a marker, not a
+disambiguator.** Which of transfer / shared borrow / exclusive borrow
+applies is determined by the **declared type on the receiving side** (the
+callee's parameter type, or the reference variable's declared type) —
+`&expr` does not change that outcome. A bare identifier and an `&`-marked one
+flowing into the same reference-typed target are equivalent:
 
 ```kl
 string a = "hello";
-inspect(a);   // inspect's parameter is `const string&` -> shared borrow, a stays valid
-update(a);    // update's parameter is `string&`         -> exclusive borrow, a stays valid (content may change)
-sink(a);      // sink's parameter is bare `string`        -> transfer, a is invalidated
+inspect(a);    inspect(&a);    // both: inspect's parameter is `const string&` -> shared borrow, a stays valid
+update(a);     update(&a);     // both: update's parameter is `string&`         -> exclusive borrow, a stays valid (content may change)
+sink(a);                        // sink's parameter is bare `string`            -> transfer, a is invalidated
 
-const string& v = a;   // v's declared type is a reference -> shared borrow, no & on the right
+const string& v = a;    // no target type context beyond v's own declared type -> shared borrow
+auto v2 = &a;            // no declared target type at all -> defaults to shared borrow (see below);
+                          // equivalent to `const string& v2 = a;`
 ```
 
-This means `&`/`&mut` as prefix **expression** operators (the current
-`UnaryOp::Ref` / `UnaryOp::MutRef` production in `unary()`) are removed
-entirely once this ADR's syntax lands — `&`/`&mut` become pure type-position
-syntax with no expression-level counterpart. See D4 for how this shifts
-borrow/transfer classification from the call-argument AST node (today) to
-the callee's declared parameter type.
+When the use site has no reference-typed target to take its classification
+from (`auto v = &a;`, or a bare `&a;` statement), `&expr` **defaults to
+shared borrow** — the lower-risk of the two, since exclusive access is a
+stronger claim that should require an explicit target type to opt into
+(`T& v = ...`), not fall out of a default. When `&expr` targets a **non**
+reference-typed target — a bare-`T` parameter or a non-reference local
+declaration — that is a use-site/target-type mismatch and **is a compile
+error**, not a silent fallback to transfer or copy: writing `&` is an
+explicit request for a borrow, and a target that cannot accept one is very
+likely a mistake at the call site, not an instruction to ignore the `&` and
+substitute different semantics.
 
-This trades away one form of call-site legibility (C++ has the same
-property, and is frequently criticized for it: `f(a)` alone does not show
-whether `a` is read, mutated, or consumed without checking `f`'s signature)
-in exchange for eliminating symbol noise at every call and matching established
-reference-passing convention. The mitigation is tooling, not syntax: IDE
-hover/inlay hints and diagnostics surface a parameter's `const T&` / `T&` /
-bare `T` classification at the call site without requiring it to be written
-there.
+```kl
+void sink(string s) { }
+sink(&a);   // ERROR: sink's parameter is bare `string`, not a reference type;
+             // `&a` cannot be reconciled with a transfer target
+```
+
+So `&`/`&mut` as **type**-position syntax (`T&`, `const T&`) are the primary
+surface form; `&expr` survives as an **optional expression-position marker**
+meaning "this is explicitly a borrow," whose kind (shared vs. exclusive) is
+still read off the target type exactly as a bare identifier's would be — it
+is sugar for legibility, not a second classification mechanism running in
+parallel with the target-type rule. This is a narrower role than 0022's `&`
+(there, `&`/`&mut` alone decided the borrow kind); see D4 for how classification
+now flows from the receiving side.
 
 **Alternatives considered and rejected:**
 
