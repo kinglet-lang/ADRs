@@ -15,9 +15,9 @@ compiler artefact for development and tests. In practice:
 | Self-host VM `--save-bytecode` | ~3–4s | Round-trip and parity validation |
 | Self-host VM `--save-bytecode --strip-debug` | ~3s | Faster, but not parity-gated |
 
-Bootstrap parity for `core/main.kl` is achieved ([0013](0013-bootstrap-bytecode-delta.md)).
+Bootstrap parity for `core/main.kl` is achieved ([0013](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md)).
 The remaining cost is dominated by **interpreting the compiler on the VM**, not by
-the on-disk `.kbc` format ([0008](0008-kbc-format-evolution.md) P0–P3 are complete).
+the on-disk `.kbc` format ([0008](%5Bdeprecated%5D%200008-kbc-format-evolution.md) P0–P3 are complete).
 
 The `.kbc` format remains useful as a **VM execution image** for user programs, but
 it is a poor fit as the centre of the **toolchain** pipeline: serialization in the
@@ -38,7 +38,7 @@ compiler relates to the C++ reference implementation.
 | **KIR** | Kinglet IR — typed CFG between the type checker and backends ([0005](0005-backend-architecture.md)). |
 | **Klos** | Kinglet object store — content-addressed cache under `.kinglet/objects/`. |
 | **Stamp** | Fingerprint of inputs (source hashes, compiler version, flags, target) that names a cached build result. |
-| **kbc** | Version-2 VM bytecode file ([0008](0008-kbc-format-evolution.md)). A **backend output**, not the canonical compile result. |
+| **kbc** | Version-2 VM bytecode file ([0008](%5Bdeprecated%5D%200008-kbc-format-evolution.md)). A **backend output**, not the canonical compile result. |
 
 ## Decision
 
@@ -47,7 +47,7 @@ compiler relates to the C++ reference implementation.
 1. **Default compilation** uses the Ref compiler only.
 2. **Shadow compilation** runs only when explicitly requested (`kinglet prove`) or
    in CI jobs configured for toolchain validation.
-3. Shadow parity gates remain as defined in [0013](0013-bootstrap-bytecode-delta.md)
+3. Shadow parity gates remain as defined in [0013](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md)
    until KIR-level comparison supersedes bytecode comparison (see D4).
 
 Rationale: the Kinglet compiler sources express **language semantics**; the C++
@@ -78,7 +78,7 @@ prove jobs may compare KIR text before comparing kbc.
 
 ### D3 — kbc is a transitional VM target, not the toolchain currency
 
-1. **Freeze** kbc format at version 2 ([0008](0008-kbc-format-evolution.md)). No
+1. **Freeze** kbc format at version 2 ([0008](%5Bdeprecated%5D%200008-kbc-format-evolution.md)). No
    further format work for compile-speed goals.
 2. **User-tier programs** may still emit kbc when `backend = "vm"` (or
    `kinglet run --vm`).
@@ -169,9 +169,9 @@ manifest and cache paths stay `kinglet.toml` and `.kinglet/`. Do not introduce
 suites that only need a fresh compiler artefact; Shadow-only suites keep
 `compiler.kbc` generation behind prove or a dedicated helper.
 
-### D6 — Amend [0010](0010-vm-redesign.md) Part 2 (embedded compiler)
+### D6 — Amend [0010](%5Bdeprecated%5D%200010-vm-redesign.md) Part 2 (embedded compiler)
 
-[0010](0010-vm-redesign.md) Part 2 proposed embedding `cli.kbc` in the `kinglet`
+[0010](%5Bdeprecated%5D%200010-vm-redesign.md) Part 2 proposed embedding `cli.kbc` in the `kinglet`
 binary. That approach is **deferred** in favour of:
 
 1. Embedding a **native toolchain artefact** (Ref-built compiler as shared library
@@ -212,7 +212,7 @@ representation exists (late M1). Solo-developer **commit-level** breakdown is in
    cache is deferred.
 2. ~~**Native backend technology**~~ — resolved by [0015](0015-llvm-backend-roadmap.md) D9 (LLVM + `libkinglet_rt`).
 3. **Shadow prove contract** — **Resolved for M0–M4**: bytecode identity for
-   `core/main.kl` remains gated ([0013](0013-bootstrap-bytecode-delta.md)).
+   `core/main.kl` remains gated ([0013](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md)).
    KIR-level prove may supplement later; it does not replace kbc parity yet.
 4. **Cross-platform stamps** — **Known issue**: `pass2b_ns_rank` may differ by
    libc++ map order. Shadow kbc comparison is macOS-gated; stamp may gain a
@@ -250,7 +250,7 @@ prove suites; fast paths use `ensure_build_stamp` as planned in M0.
 - **Faster local iteration**: default path avoids VM interpretation of the full
   compiler (~3s → Ref ~0.07s for bytecode emission; native target removes kbc
   from the loop entirely when M3 lands).
-- **Clearer roles**: kbc size/format optimisations ([0008](0008-kbc-format-evolution.md))
+- **Clearer roles**: kbc size/format optimisations ([0008](%5Bdeprecated%5D%200008-kbc-format-evolution.md))
   no longer block toolchain performance work.
 - **Test layout**: `selfhost/`, `differential/`, and `codegen/` remain; prove
   orchestration moves behind `kinglet prove` instead of implicit `ensure_cli_kbc`
@@ -266,9 +266,9 @@ prove suites; fast paths use `ensure_build_stamp` as planned in M0.
 
 - [0005](0005-backend-architecture.md) — KIR definitions and backend split.
 - [0015](0015-llvm-backend-roadmap.md) — LLVM native backend phases L0–L5.
-- [0008](0008-kbc-format-evolution.md) — kbc v2 as VM backend output (frozen).
-- [0010](0010-vm-redesign.md) — VM runtime (Part 1); Part 2 amended by D6.
-- [0013](0013-bootstrap-bytecode-delta.md) — Shadow bytecode parity until prove
+- [0008](%5Bdeprecated%5D%200008-kbc-format-evolution.md) — kbc v2 as VM backend output (frozen).
+- [0010](%5Bdeprecated%5D%200010-vm-redesign.md) — VM runtime (Part 1); Part 2 amended by D6.
+- [0013](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md) — Shadow bytecode parity until prove
   contract evolves.
 
 ## References

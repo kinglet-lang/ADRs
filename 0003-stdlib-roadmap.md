@@ -182,7 +182,7 @@ Implement the VM in Kinglet; C++ bootstrap becomes a stub only:
 - `vm/vm.kl` — stack machine interpreter
 - `vm/native.kl` — L0 opcode bindings in the self-hosted VM
 
-The L0 opcode set may **move in implementation** as the VM migrates, but the **semantic boundary** (platform vs language builtin) stays the same. See [0010](0010-vm-redesign.md).
+The L0 opcode set may **move in implementation** as the VM migrates, but the **semantic boundary** (platform vs language builtin) stays the same. See [0010](%5Bdeprecated%5D%200010-vm-redesign.md).
 
 ### Phase D — C++ bootstrap parity
 
@@ -214,8 +214,8 @@ After the self-host pipeline is stable, fold the same single-table / `extern nat
 
 - [0011](0011-module-system-redesign.md) — `import {}`, singleton loading, `using` rules; stdlib builds on this.
 - [0009](0009-concepts-landing.md) — Phase B `Iterator` and generic combinators.
-- [0008](0008-kbc-format-evolution.md) — Phase C self-hosted VM loading `.kbc`.
-- [0010](0010-vm-redesign.md) — Embedded self-host binary and VM evolution.
+- [0008](%5Bdeprecated%5D%200008-kbc-format-evolution.md) — Phase C self-hosted VM loading `.kbc`.
+- [0010](%5Bdeprecated%5D%200010-vm-redesign.md) — Embedded self-host binary and VM evolution.
 
 ## References
 

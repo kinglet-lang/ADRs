@@ -98,7 +98,7 @@ Ref compiler may continue reading `kinglet.toml` during transition (0020 D6).
 1. **FFI vs pure KL lowering** — S0 chooses FFI to Ref `KirToLlvm` vs port; document
    in implementation plan after spike.
 2. **Object interchange** — require bit-identical `.o` or only behavioral link compatibility?
-3. **Embedded compiler** — whether S4 replaces [0010](0010-vm-redesign.md) / 0015 L5-2
+3. **Embedded compiler** — whether S4 replaces [0010](%5Bdeprecated%5D%200010-vm-redesign.md) / 0015 L5-2
    embed path for distribution.
 
 ## Dependencies

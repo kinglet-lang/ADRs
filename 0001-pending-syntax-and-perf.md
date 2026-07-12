@@ -34,7 +34,7 @@ Miscellaneous features from the original bs TODO that don't warrant individual d
 
 Reference types, borrows, and heap ownership are specified in
 [0022](0022-native-unique-ownership.md) (supersedes draft
-[0021](0021-references-and-move.md)). No `move()` keyword; transfer uses `unique T`.
+[0021](%5Bdeprecated%5D%200021-references-and-move.md)). No `move()` keyword; transfer uses `unique T`.
 
 Original §Syntax / §Performance lists above are preserved for historical context.
 

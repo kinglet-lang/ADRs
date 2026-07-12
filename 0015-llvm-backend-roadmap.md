@@ -52,7 +52,7 @@ Native code assumes a small **C ABI runtime** linked into every executable:
 | Program entry | `kinglet_rt_main` wraps user `main`, handles exit code |
 | Stack / locals | LLVM `alloca` in entry block; no GC |
 | Strings | Heap-allocated buffer + length (match VM `HeapString` layout where practical) |
-| Arrays, structs, enums, maps | Opaque handles or struct layouts generated per type; RC matching [0010](0010-vm-redesign.md) semantics |
+| Arrays, structs, enums, maps | Opaque handles or struct layouts generated per type; RC matching [0010](%5Bdeprecated%5D%200010-vm-redesign.md) semantics |
 | Errors (`try` / `?:`) | Lower to tagged union or errno-style slot; align with [0006](0006-error-handling-unification.md) |
 | Panic / unreachable | `kinglet_rt_abort(msg)` — process exit with non-zero status |
 | Native I/O (`io`, `fs`, `sys`) | Calls into `libkinglet_rt` or platform libc wrappers |
@@ -211,7 +211,7 @@ narrower literal to a wider variable is an explicit widening assignment (allowed
 Full fixed-width surface syntax and KIR opcodes (`ConstI32`, `IAdd64`, `FAdd32`, …)
 trail the policy above. Until landed:
 
-- VM continues to store alias `int` as `int64_t` ([0010](0010-vm-redesign.md)).
+- VM continues to store alias `int` as `int64_t` ([0010](%5Bdeprecated%5D%200010-vm-redesign.md)).
 - Remaining parity gaps are listed in D6; integer and enum wire debt is cleared for the current native smoke manifest.
 - Native manifest expands per width only after parity cases exist for that width.
 
@@ -265,7 +265,7 @@ remain an internal fallback for debugging (`--emit=c`).
 
 - [0005](0005-backend-architecture.md) — KIR form and VM backend contract.
 - [0006](0006-error-handling-unification.md) — error lowering in native RT.
-- [0010](0010-vm-redesign.md) — value representation reference for RT design.
+- [0010](%5Bdeprecated%5D%200010-vm-redesign.md) — value representation reference for RT design.
 - [0014](0014-compilation-toolchain-architecture.md) — Klos, `kinglet build`, M3/M4.
 
 ## Commit sequence (solo developer)

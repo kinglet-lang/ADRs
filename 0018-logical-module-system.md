@@ -107,7 +107,7 @@ root. Source files do not embed dependency paths once 0018 is fully adopted.
 1. Manifest loader + `dependency` table (0020) in C++ Ref.
 2. Parser/checker: `export module`, `import name`, `using ns::*`.
 3. Migrate self-host sources and tests.
-4. Shadow compiler parity ([0013](0013-bootstrap-bytecode-delta.md)).
+4. Shadow compiler parity ([0013](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md)).
 5. Preen + Perch grammar/LSP updates.
 
 ## Consequences

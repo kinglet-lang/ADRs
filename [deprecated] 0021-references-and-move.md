@@ -29,7 +29,7 @@ the language surface:
 - `&` in the lexer is **bitwise and** only (`&`, `&&`).
 - Parameters, locals, and returns are always **by value** at the type level.
 - Assignment and calls **copy** (heap aggregates use RC + COW in the VM per
-  [0010](0010-vm-redesign.md); native lowering still lacks scope-exit **drop**
+  [0010](%5Bdeprecated%5D%200010-vm-redesign.md); native lowering still lacks scope-exit **drop**
   insertion per [0015](0015-llvm-backend-roadmap.md) and [native.md](../docs/native.md)).
 
 Meanwhile, real programs pay unnecessary copy costs on `string`, arrays, maps, and
@@ -226,7 +226,7 @@ No `fn` keyword; C-style declarations retained ([0002](0002-design-principles.md
   referent; callee loads through indirection.
 - **Implicit move**: transfer heap handle in the wire representation; source slot set to
   **null / empty** sentinel; RC decrement skipped for transferred handle.
-- Existing RC + COW ([0010](0010-vm-redesign.md)) remains; `&mut` mutation may trigger
+- Existing RC + COW ([0010](%5Bdeprecated%5D%200010-vm-redesign.md)) remains; `&mut` mutation may trigger
   COW split on write as today.
 
 **Native (phase R1 / M1 — blocks on drop):**
@@ -287,8 +287,8 @@ inline tests, `scope` blocks, `?` propagation, `int?` niche, struct match patter
   can ship earlier.
 - **Generic functions** over `&T` require monomorphization and reference-aware codegen
   (phase R2+).
-- **Bytecode / KIR opcode** additions must append only ([0008](0008-kbc-format-evolution.md),
-  [0013](0013-bootstrap-bytecode-delta.md)); expect golden refreshes.
+- **Bytecode / KIR opcode** additions must append only ([0008](%5Bdeprecated%5D%200008-kbc-format-evolution.md),
+  [0013](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md)); expect golden refreshes.
 
 ### Acceptance criteria (M1 complete)
 
@@ -302,7 +302,7 @@ inline tests, `scope` blocks, `?` propagation, `int?` niche, struct match patter
 ## Dependencies
 
 - [0002](0002-design-principles.md) — copy default, opt-in references, deterministic destruction.
-- [0010](0010-vm-redesign.md) — RC + COW heap representation.
+- [0010](%5Bdeprecated%5D%200010-vm-redesign.md) — RC + COW heap representation.
 - [0015](0015-llvm-backend-roadmap.md) — native drop / destruction lowering.
 - [0016](0016-typed-kir.md) — typed slots and aggregate metadata for native refs.
 - [0012](0012-test-suite-redesign.md) — sema / probe / native gates.
