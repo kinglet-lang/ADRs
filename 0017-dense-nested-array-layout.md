@@ -142,4 +142,4 @@ stable.
 - [0016](0016-typed-kir.md) — container metadata for chained `IndexGet`
 - [0002](0002-design-principles.md) — value semantics, row copy
 - [0015](0015-llvm-backend-roadmap.md) — native RT parity
-- [0013](0013-bootstrap-bytecode-delta.md) — `DenseArrayNew` opcode appended; refresh codegen goldens on emit changes
+- [0013](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md) — `DenseArrayNew` opcode appended; refresh codegen goldens on emit changes

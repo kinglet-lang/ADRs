@@ -77,7 +77,7 @@ Prerequisite: Part 1 must land first, since the embedded compiler needs to handl
 - Self-host compiler can process programs with struct literals without deep-copy blowup.
 - Memory usage may increase slightly due to HeapObj headers (tag + refcount).
 - `Value` holds immediates or `RcPtr<HeapObj>` instead of inline `vector<Value>`.
-- Bytecode format unchanged — VM-internal only ([0008](0008-kbc-format-evolution.md)).
+- Bytecode format unchanged — VM-internal only ([0008](%5Bdeprecated%5D%200008-kbc-format-evolution.md)).
 - Self-host compile time for `core/main.kl` is ~3–4s on the VM (2026-06-09); further
   toolchain speed work is in [0014](0014-compilation-toolchain-architecture.md).
 

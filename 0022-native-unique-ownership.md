@@ -3,7 +3,7 @@
 - **Status**: accepted (N0 native-only implemented 2026-06-20; ownership phases pending)
 - **Proposed**: 2026-06-21
 
-**Replaces**: [0021 — References and Move Semantics](0021-references-and-move.md), and retires the bytecode/VM paths documented by [0008](0008-kbc-format-evolution.md), [0010](0010-vm-redesign.md), and [0013](0013-bootstrap-bytecode-delta.md).
+**Replaces**: [0021 — References and Move Semantics](%5Bdeprecated%5D%200021-references-and-move.md), and retires the bytecode/VM paths documented by [0008](%5Bdeprecated%5D%200008-kbc-format-evolution.md), [0010](%5Bdeprecated%5D%200010-vm-redesign.md), and [0013](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md).
 
 ## Context
 
@@ -15,10 +15,10 @@ parity.
 
 The dominant language-capability gap is **how owned values behave**: today
 parameters and locals are always “by value” in the AST, but the implementation
-mixes **deep copy**, **RC + COW** ([0010](0010-vm-redesign.md)), and **unowned
+mixes **deep copy**, **RC + COW** ([0010](%5Bdeprecated%5D%200010-vm-redesign.md)), and **unowned
 wire handles** without a single coherent model. Native lowering still lacks
 scope-exit **drop** ([0015](0015-llvm-backend-roadmap.md), [native.md](../docs/native.md)).
-[0021](0021-references-and-move.md) explored references and move semantics on a
+[0021](%5Bdeprecated%5D%200021-references-and-move.md) explored references and move semantics on a
 dual-track VM/native assumption; that direction is **withdrawn** in favour of the
 model below.
 
@@ -49,10 +49,10 @@ move-semantics / moved-from** rules as a cross-cutting feature.
    - CLI: `--save-bytecode`, `--vm`, `backend = vm`, and any kbc output paths
    - Tests: migrate or drop VM-only suites; **no** retained “legacy VM hooks”
    - Self-host: `compiler/bytecode.kl` and kbc serialization helpers **removed**
-     (historical kbc format remains documented in [0008](0008-kbc-format-evolution.md)
-     and [0010](0010-vm-redesign.md) only)
+     (historical kbc format remains documented in [0008](%5Bdeprecated%5D%200008-kbc-format-evolution.md)
+     and [0010](%5Bdeprecated%5D%200010-vm-redesign.md) only)
 4. **Shadow / differential** validation uses **behaviour comparison on native
-   output** (exit code + stdout). Bytecode identity tests ([0013](0013-bootstrap-bytecode-delta.md))
+   output** (exit code + stdout). Bytecode identity tests ([0013](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md))
    are **retired** with the VM.
 5. **CI and local workflows** use native build/run only (`ensure_build_stamp`,
    `compiler.kbc`, `ensure_cli_kbc`, and similar VM bootstrap paths are **deleted**).
@@ -142,7 +142,7 @@ Rules:
 ### D5 — Borrowing rules (no lifetime syntax)
 
 Checked **intra-procedurally** with call-boundary reborrow (same spirit as
-[0021](0021-references-and-move.md) D4, without move semantics):
+[0021](%5Bdeprecated%5D%200021-references-and-move.md) D4, without move semantics):
 
 **`&mut` exclusivity:**
 
@@ -238,15 +238,15 @@ refactor; semantic contract is **unique handle per owner**.
 4. **`match`**: v1 bindings copy by value (as today); `match` on `unique` or by-ref
    patterns deferred.
 
-### D11 — Relationship to [0021](0021-references-and-move.md)
+### D11 — Relationship to [0021](%5Bdeprecated%5D%200021-references-and-move.md)
 
-[0021](0021-references-and-move.md) is **superseded** by this ADR for:
+[0021](%5Bdeprecated%5D%200021-references-and-move.md) is **superseded** by this ADR for:
 
 - Implicit move / transfer sites
 - Dual VM/native lowering notes
 - COW as part of the language copy model
 
-[0021](0021-references-and-move.md) borrow exclusivity and escape rules are
+[0021](%5Bdeprecated%5D%200021-references-and-move.md) borrow exclusivity and escape rules are
 **carried forward** in D5 (unchanged intent, native-only lowering).
 
 ### D12 — Implementation order
@@ -270,10 +270,10 @@ blocked on N1–N7** — VM removal lands with ADR acceptance.
 | ADR | Amendment |
 |-----|-----------|
 | [0002](0002-design-principles.md) | Heap types use **explicit unique ownership**; scalars stay copy-by-default. Pillar 3 clarified: no **pervasive** Rust-style ownership, but **localized** ownership for heap resources. |
-| [0010](0010-vm-redesign.md) | RC+COW model is **historical** (VM deleted). |
+| [0010](%5Bdeprecated%5D%200010-vm-redesign.md) | RC+COW model is **historical** (VM deleted). |
 | [0014](0014-compilation-toolchain-architecture.md) | D3: kbc/VM **removed**; native is the **only** backend. |
 | [0015](0015-llvm-backend-roadmap.md) | Drop insertion is **required** for language ownership (not optional perf). |
-| [0021](0021-references-and-move.md) | **Superseded** by this document. |
+| [0021](%5Bdeprecated%5D%200021-references-and-move.md) | **Superseded** by this document. |
 
 ## Consequences
 
@@ -313,7 +313,7 @@ blocked on N1–N7** — VM removal lands with ADR acceptance.
 - [0015](0015-llvm-backend-roadmap.md) — native backend and RT.
 - [0016](0016-typed-kir.md) — typed slots for drop and references.
 - [0020](0020-project-manifest-and-targets.md) — native default build.
-- [0021](0021-references-and-move.md) — superseded.
+- [0021](%5Bdeprecated%5D%200021-references-and-move.md) — superseded.
 
 ## References
 
