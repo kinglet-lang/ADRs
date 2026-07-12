@@ -20,20 +20,20 @@ Miscellaneous features from the original bs TODO that don't warrant individual d
 - [ ] Zero-overhead optional: `int? x = null;` with niche optimization
 - [ ] `[[nodiscard]]`: warn on unused return values
 - [ ] Struct patterns in match and structured binding
-- [x] Reference types `&T` / `&mut T` and ownership model — **promoted to [0022](0022-native-unique-ownership.md)** (native unique ownership; no move semantics)
-- [x] Data types, literals, struct ABI, wide integers — **promoted to [0023](0023-data-types-and-abi.md)** (P0 self-host gate)
+- [x] Reference types `&T` / `&mut T` and ownership model — **promoted to [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)** (native unique ownership; no move semantics)
+- [x] Data types, literals, struct ABI, wide integers — **promoted to [0023](%5Bdeprecated%5D%200023-data-types-and-abi.md)** (P0 self-host gate)
 
 ## Performance (from P5)
 
 - [ ] NaN-boxing migration for Value representation
-- [x] Trivial relocatability (P1144 / P2786): memcpy transfer for `unique` — **promoted to [0022](0022-native-unique-ownership.md)** (internal analysis; no user `relocatable` keyword)
+- [x] Trivial relocatability (P1144 / P2786): memcpy transfer for `unique` — **promoted to [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)** (internal analysis; no user `relocatable` keyword)
 
 ## Amendments
 
-### 2026-06-21 — Native unique ownership ([0022](0022-native-unique-ownership.md))
+### 2026-06-21 — Native unique ownership ([0022](%5Bdeprecated%5D%200022-native-unique-ownership.md))
 
 Reference types, borrows, and heap ownership are specified in
-[0022](0022-native-unique-ownership.md) (supersedes draft
+[0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) (supersedes draft
 [0021](%5Bdeprecated%5D%200021-references-and-move.md)). No `move()` keyword; transfer uses `unique T`.
 
 Original §Syntax / §Performance lists above are preserved for historical context.
