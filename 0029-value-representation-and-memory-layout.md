@@ -66,7 +66,7 @@ blocked by 0028.
 | **Scalars (Copy)** | `bool`, `char`, `int8`…`int64`, `uint8`…`uint64`, `float32`, `float64` | **Stack**, inline bit pattern, never boxed (D2, fixes the `Float` exception) | Always copies; ownership rules do not apply |
 | **Aggregates** | `struct`, fixed-size arrays (`T[N]`) | **Stack**, inline contiguous layout (D3–D4) unless every field/element is itself heap-backed | Follows field/element categories; struct-level transfer/copy is fieldwise (0028 D5/D6 applied per field) |
 | **Value types (heap handles)** | `string`, `T[]` (dynamic), `map<K,V>` | **Heap**, opaque owning handle (unchanged from 0023 D7/D8) | Copy-by-default assignment, transfer at call boundaries (0028 D5) |
-| **Resource types** | `box<T>`, `fs::file`, `net::tcpstream`, `mutex`, `thread`, non-cloneable user types | **Heap**, exclusive owning handle (unchanged from 0023) | Always transfers, no clone (0028 D6) |
+| **Resource types** | `fs::file`, `net::tcpstream`, `mutex`, `thread`, non-cloneable user types, any `T?` on a type requiring owning indirect representation | **Heap**, exclusive owning handle (unchanged from 0023) | Always transfers, no clone (0028 D6) |
 | **Borrows** | `const T&`, `T&` | Machine pointer to the referent's storage (stack slot, struct field slot, or heap object as appropriate) | Non-owning (0028 D10) |
 
 `void` is not a value type. `auto` defers to the initializer's type (D12,
@@ -140,12 +140,12 @@ supersedes it):
    this ADR, not user errors — same standing 0023 gave this rule.
 
 **Fields that are themselves value types or resource types** (a `string`
-field, a `box<T>` field) still occupy their **handle's** size inline in the
-struct (8 bytes on 64-bit, a plain pointer-width slot) — the struct itself
-does not need to be heap-allocated merely because one of its fields points at
-the heap. Only a struct's *own* storage location changes (stack, not heap);
-each field's own category (D1) still governs where that field's *data*
-ultimately lives.
+field, a `T?` field using owning-indirect representation) still occupy their
+**handle's** size inline in the struct (8 bytes on 64-bit, a plain
+pointer-width slot) — the struct itself does not need to be heap-allocated
+merely because one of its fields points at the heap. Only a struct's *own*
+storage location changes (stack, not heap); each field's own category (D1)
+still governs where that field's *data* ultimately lives.
 
 ### D4 — Fixed-size arrays: inline, matching struct treatment
 
@@ -166,7 +166,12 @@ allocation, no handle indirection. This is distinct from the dynamic `T[]`
 type (D8, unchanged heap-handle vector) — the two are different types with
 different storage strategies, not the same type with two representations.
 
-### D5 — `box<T>`: narrowed role, explicit heap indirection
+### D5 — `box<T>`: narrowed role, explicit heap indirection **(superseded by D14)**
+
+> **D14 (Optional types) replaces the need for `box<T>` as a separate
+> heap-indirection primitive.**  Recursive types use `T?` with an owning
+> indirect representation; users write `node? next`, not `box<node> next`.
+> This section is retained for historical context; D14 is the active design.
 
 `box<T>` is the **only** way to put a value on the heap that would otherwise
 be inline (D1–D4). Its role narrows from 0022's original framing (where it
@@ -263,7 +268,8 @@ convert between forms when runtime wire is explicitly needed.
 | Struct (fixed layout) | Inline contiguous stack storage per D3 — **no heap allocation for the struct itself** |
 | Fixed-size array `T[N]` | Inline contiguous stack storage per D4 |
 | `string`, dynamic `T[]`, `map<K,V>` | `0xFFFE<<48 \| ptr` heap handle (unchanged) |
-| `box<T>` | `0xFFFE<<48 \| ptr` heap handle pointing at a heap-allocated `T` (unchanged mechanism, narrowed role per D5) |
+| `T?` (owning indirect, recursive) | `0xFFFE<<48 \| ptr` heap handle pointing at a heap-allocated `T` (D14) |
+| `T?` (tagged inline, scalar) | Inline value plus discriminator bit/byte, layout per type |
 | Tag-only enum | `0xFFFD<<48 \| type<<16 \| variant` inline (unchanged) |
 
 The only wire-format change from 0023 D11 is removing `Float`'s heap-boxed row
@@ -284,7 +290,7 @@ borrow kind.
 |-------|-------------------|------|
 | Scalar / value-type / resource-type classification | **D1 (this document)** | Consumed by 0028 D1–D6 |
 | Struct / fixed-array inline layout | **D3–D4 (this document)** | Unaffected — 0028's transfer/borrow rules operate on handles regardless of stack vs. heap placement |
-| `box<T>` role and mechanics | **D5 (this document)** | Consumed by 0028 D6 (resource-type transfer rules) |
+| `T?` (Optional) role and representation | **D14 (this document)** | Consumed by 0028 D6 (resource-type transfer rules for owning-indirect `T?`) |
 | Scalar copy-always rule | **D1/D2 (this document)** | Restated and relied upon by 0028 D2 |
 | `&` / `const T&` / `T&` syntax and semantics | — | 0028 D3, D10 |
 | Transfer, drop, `move()` | — | 0028 D4–D9 |
@@ -300,9 +306,76 @@ merged independently, in either order.
 | **L0** | Remove `Float` heap boxing (D2); scalars uniformly inline | no `kl_float_new` call sites remain; float wire has no `0xFFFE` tag |
 | **L1** | Struct ABI: `StructLayout` metadata table, inline stack allocation, declaration-order fields (D3) | struct literal evaluation no longer calls `kl_struct_new`; cross-module struct copy golden tests pass |
 | **L2** | Fixed-size array inline layout (D4) | `T[N]` local evaluation allocates on the stack, not via `kl_array_new` |
-| **L3** | `box<T>` narrowed to explicit heap indirection only (D5) | self-referential struct fields (`box<node> next`) compile and round-trip |
+| **L3** | Optional type `T?` representation, including owning indirect layout for recursive types (D14) | self-referential struct fields (`node? next`) compile and round-trip |
 
 Bootstrap leads L0–L3.
+
+### D14 — Optional types (`T?`)
+
+`T?` is an abstract data type. The compiler selects a concrete representation
+per `T`, not the user. Three representation strategies:
+
+| T category | Representation | Notes |
+|------------|----------------|-------|
+| Scalar (`int?`, `float?`) | Inline tagged value | Reserved sentinel bit pattern (e.g. all-ones for `int?`) |
+| Already-nullable heap handle (`string?`) | Inline, co-opted empty state | `""` or `0xFFFE<<48 | 0` serves as `none` without a separate tag |
+| Struct/enum requiring recursion (`node?`) | Owning indirect (heap pointer) | `none` = null pointer; `some(v)` = pointer to heap-allocated `v` |
+
+`string` and other heap-handle types that already carry an in-band null/empty
+representation do not get a separate tag byte — the compiler reuses the
+existing empty state.  Resource types with an invalid-handle sentinel
+(`file?`) similarly co-opt the sentinel rather than adding a wrapping tag.
+
+**Recursive type termination rule:**
+
+A struct may not contain itself through an unconditional inline field.
+A recursive cycle is permitted only when at least one edge is represented by
+an indirection-capable type such as `T?`. For recursive `T?`, the compiler
+uses an owning indirect representation — the same role `box<T>` would fill in
+other designs, but surfaced as a general Optional construct rather than a
+single-purpose heap-indirection primitive.
+
+```kl
+// Illegal — unconditional inline recursion, sizeof is unbounded
+struct node {
+    int value;
+    node next;       // ERROR: node contains itself
+}
+
+// Legal — T? breaks the recursion
+struct node {
+    int value;
+    node? next;      // OK: compiler uses owning indirect representation
+}
+```
+
+**Syntax and usage:**
+
+```kl
+// Construction
+node head = node {
+    .value = 1,
+    .next = node { .value = 2, .next = none },
+};
+
+// Safe access
+int value = head.next?.value ?: -1;
+
+// Transfer
+node? tail = head.next;
+```
+
+`none` is the empty Optional value.  `?.` is safe field access: evaluates to
+`none` when the receiver is `none`, otherwise unwraps and accesses the field.
+The result of `?.` is itself an Optional wrapping the field's type.
+
+**Rationale for Optional over `box<T>`:** A single-purpose heap-indirection
+primitive (`box<T>`) duplicates the representation machinery already needed
+for `T?` on recursive types — both are owning indirect pointers to a `T` on
+the heap.  Surfacing the same mechanism through `T?` gives users Optional
+semantics (a real feature useful beyond recursion) while the compiler reuses
+the same indirection layout for the recursive-termination case.  Users never
+type `box<T>` — they write `T?` and the compiler picks the right layout.
 
 ## Consequences
 
@@ -313,9 +386,9 @@ Bootstrap leads L0–L3.
 - Struct and fixed-array types finally match their declaration-implied
   memory model — a `struct { int32 x; int32 y; }` is 8 bytes, not a heap
   allocation plus two 64-bit slots plus vector overhead.
-- `box<T>`'s narrowed role (explicit indirection only, not "the only way to
-  get heap ownership") is simpler to reason about than 0022's original
-  framing where it sat alongside a language-wide heap-ownership story.
+- `T?` Optional type as a unified mechanism — handles scalar tagging, string
+  co-opted empty state, and recursive indirection in one construct rather
+  than a separate `box<T>` primitive.
 - Struct-by-value copies become genuinely cheap for small aggregates
   (register/stack copy) instead of always paying a heap-allocation cost.
 
@@ -343,9 +416,9 @@ Bootstrap leads L0–L3.
       runtime function; `sizeof`-equivalent struct size matches the
       declared-field-sum-plus-padding layout table, not a handle size
 - [ ] D4: `T[N]` locals are stack-allocated, not heap-allocated
-- [ ] D5: `box<T>` remains the only route to heap indirection for a type that
-      would otherwise be inline; `string` / dynamic `T[]` / `map` continue to
-      heap-allocate independent of `box<T>`'s existence
+- [ ] D14: self-referential struct fields with `T?` compile and round-trip
+      with owning indirect representation; `?.` safe access works; `none`
+      literal is recognised
 
 ## Dependencies
 
@@ -375,8 +448,8 @@ Bootstrap leads L0–L3.
 ## Open questions
 
 1. **Large-struct-by-value threshold** — whether a future revision should
-   introduce an implicit heap fallback for very large structs passed by
-   value, or leave that entirely to explicit `box<T>` opt-in; not decided
+   introduce an implicit indirection for very large structs passed by
+   value, or leave that entirely to explicit `T?` opt-in; not decided
    here (Risks section).
 2. **`StructLayout` metadata format** — exact on-disk/in-memory shape of the
    layout table shared between `kir_to_llvm.cc` and `ll_emit.kl`; carried
