@@ -105,7 +105,7 @@ Ownership behaviour is defined per **type category**, established in
 |----------|----------|----------------------|
 | **Scalar (Copy)** | `int8`…`int64`, `uint8`…`uint64`, `float32`, `float64`, `bool`, `char` | Always copies; never transfers; no heap backing |
 | **Value type (heap-backed)** | `string`, `T[]`, `map<K,V>` | Copies on plain assignment; transfers only at call boundaries (D4) |
-| **Resource type** | `box<T>`, user-defined structs declaring `@destroy` (see D6) | Always transfers; no clone exists |
+| **Resource type** | `T?` (owning indirect, ADR 0029 D14), user-defined structs declaring `@destroy` (see D6) | Always transfers; no clone exists |
 
 A type's category is a property of the type itself (declared in 0029), not of
 how it is used at a call site. The rules below apply this classification
@@ -257,7 +257,7 @@ each call site is checked once, independent of control flow, because the
 transferred variable's scope-local liveness after the call is a strictly
 local fact at that one call.
 
-Resource types (`box<T>`, `fs::file`, `mutex`, …) transfer on **both** call
+Resource types (`T?` owning indirect, `fs::file`, `mutex`, …) transfer on **both** call
 boundaries and plain assignment, per D6, because they have no copy to fall
 back on — see D6 for why this does not reopen the dataflow problem.
 
@@ -573,8 +573,9 @@ The following are named so future work has a landing spot, but **no syntax or
 semantics are decided in this ADR**:
 
 - **Shared ownership** (`rc<T>`, `arc<T>`, `weak<T>`): not introduced in v0.
-  `box<T>` (0029) remains the only owning-pointer type until a real use case
-  justifies reference counting or weak references at the language level.
+  `T?` owning indirect (ADR 0029 D14) is the primary owning-indirection
+  mechanism; a real use case for reference counting or weak references at
+  the language level has not yet presented itself.
 - **Raw pointers and `unsafe`** (`*T`, `*const T`, `unsafe { }` blocks):
   needed eventually for FFI and runtime implementation, but no syntax is
   specified here. When introduced, dereferencing a raw pointer or

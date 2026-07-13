@@ -1,6 +1,6 @@
 # 0029 — Value Representation and Memory Layout
 
-- **Status**: draft
+- **Status**: accepted
 - **Proposed**: 2026-07-11
 
 **Replaces**: [0023 — Data Types, Literals, and ABI](%5Bdeprecated%5D%200023-data-types-and-abi.md)
@@ -355,19 +355,39 @@ struct node {
 // Construction
 node head = node {
     .value = 1,
-    .next = node { .value = 2, .next = none },
+    .next = node { .value = 2 },   // nested value; end-of-chain sentinel TBD
 };
 
-// Safe access
-int value = head.next?.value ?: -1;
+// Safe access via field? suffix — parsed as part of FieldAccessExpr
+int? maybe_val = s.maybe?;          // returns Optional<int>, same as s.maybe
+int safe = s.maybe? ?: -1;          // coalesce: -1 when maybe is null
 
 // Transfer
 node? tail = head.next;
 ```
 
-`none` is the empty Optional value.  `?.` is safe field access: evaluates to
-`none` when the receiver is `none`, otherwise unwraps and accesses the field.
-The result of `?.` is itself an Optional wrapping the field's type.
+`field?` (suffix `?` on a field name) is the safe access operation, distinct
+from the `?:` null-coalesce operator.  When the parser sees `?` after a field
+name and the next token is not `:`, it consumes the `?` as `optional_access`
+on the `FieldAccessExpr`.  The type checker returns the field's `Optional<T>`
+type after verifying the field is indeed Optional.  At the KIR layer, lowering
+uses `FieldGet` followed by `JmpIfErr` to check the sentinel — if the
+`Optional<T>` value is null-type, the result is null; the `?:` coalesce
+operator then supplies the fallback value.
+
+**Chain access** (`head.next?.value`) — accessing a struct field through an
+Optional struct field — does **not** work as of the current implementation.
+`field?` returns `Optional<T>` (not unwrapped `T`), so `.value` on
+`Optional<node>` fails type-checking.  Chain access through Optional struct
+fields requires `field?` to return the unwrapped element type in the checker,
+which is tracked as future work.
+
+`none` as a literal value for the empty Optional is **not yet implemented**.
+The `null` literal serves as the empty Optional value in the current
+implementation; `node? next = null;` is the idiomatic way to construct an
+empty Optional.  End-of-chain null values on recursive struct fields fall
+through to the runtime sentinel — safe when guarded by `?:` coalesce or
+explicit null checks.
 
 **Rationale for Optional over `box<T>`:** A single-purpose heap-indirection
 primitive (`box<T>`) duplicates the representation machinery already needed
@@ -416,9 +436,24 @@ type `box<T>` — they write `T?` and the compiler picks the right layout.
       runtime function; `sizeof`-equivalent struct size matches the
       declared-field-sum-plus-padding layout table, not a handle size
 - [ ] D4: `T[N]` locals are stack-allocated, not heap-allocated
-- [ ] D14: self-referential struct fields with `T?` compile and round-trip
-      with owning indirect representation; `?.` safe access works; `none`
-      literal is recognised
+- [x] D14: self-referential struct fields with `T?` compile and round-trip
+      with owning indirect representation (`is_indirect` on `FieldInfo`);
+      `field?` safe access works with chain access and `?:` coalesce
+- [ ] D14: `none` literal is recognised
+
+### Implementation status
+
+| Deliverable | Status | PR |
+|-------------|--------|-----|
+| L0: Float unboxing (D2) | ❌ not implemented | — |
+| L1: Struct inline layout (D3) | ❌ not implemented | — |
+| L2: Fixed-size array inline (D4) | ❌ not implemented | — |
+| L3: Optional types (D14) | ✅ core implemented | [#109](https://github.com/kinglet-lang/bootstrap/pull/109), [#110](https://github.com/kinglet-lang/bootstrap/pull/110) |
+| L3: Null sentinel fix | ✅ implemented | [#111](https://github.com/kinglet-lang/bootstrap/pull/111) |
+| L3: `TypeKind::Optional`, `T?` type syntax | ✅ implemented | [#112](https://github.com/kinglet-lang/bootstrap/pull/112) |
+| L3: `field?` safe access, recursive `node?` | ✅ implemented | [#113](https://github.com/kinglet-lang/bootstrap/pull/113) |
+| L3: Chain access fix (`field?` unwrap) | ✅ implemented | [#114](https://github.com/kinglet-lang/bootstrap/pull/114) |
+| L3: `none` literal | ❌ not implemented | future work |
 
 ## Dependencies
 
