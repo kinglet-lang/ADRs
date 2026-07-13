@@ -67,6 +67,23 @@ This applies retroactively — any ADR already in `deprecated` / `superseded-by`
 status gets the filename prefix too, not just newly-superseded ones going
 forward.
 
+### Status column for decision-level ADRs
+
+Some ADRs (e.g. those with many independent `### D<N>` / `### L<N>` decisions)
+carry their own **Implementation status** table in the document body, tracking
+each decision or deliverable separately. For these, the index's **Status**
+column must **not** restate implementation detail in free text — it shows a
+plain `accepted · X/Y delivered` ratio, where X/Y counts the ✅ rows against
+all substantive rows (rows with an actual done/not-done state; documentation-only
+rows such as "non-goals" or "relationship to NNNN" are excluded from the
+denominator). Optionally name the remaining items in parentheses if that fits
+in one line.
+
+This ratio is a **derived summary** of the body's own table — whenever a
+decision's status changes in the body table, update the index ratio in the
+same commit. Do not let the two drift; a wrong ratio here is worse than an
+outdated one because readers trust the index without opening the file.
+
 ## Lifecycle
 
 ```
@@ -113,5 +130,5 @@ draft → accepted → implemented
 | 0025 | [Namespace-qualified type names](0025-namespace-qualified-type-names.md) | implemented | 2026-07-10 | 2026-07-11 |
 | 0026 | [Standard I/O capability model](0026-standard-io-capability-model.md) | draft | 2026-07-10 | |
 | 0027 | [Filesystem resource API](0027-filesystem-resource-api.md) | draft | 2026-07-10 | |
-| 0028 | [Ownership, borrowing, and value transfer](0028-ownership-and-value-transfer.md) | accepted | 2026-07-11 | |
-| 0029 | [Value representation and memory layout](0029-value-representation-and-memory-layout.md) | accepted (L3 Optional delivered; L0-L2 pending) | 2026-07-11 | |
+| 0028 | [Ownership, borrowing, and value transfer](0028-ownership-and-value-transfer.md) | accepted · 13/15 delivered (D9 `move()`, D13 closures pending) | 2026-07-11 | |
+| 0029 | [Value representation and memory layout](0029-value-representation-and-memory-layout.md) | accepted · 6/9 delivered (L1 struct inline, L2 array inline, `none` literal pending) | 2026-07-11 | |

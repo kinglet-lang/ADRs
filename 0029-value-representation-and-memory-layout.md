@@ -430,8 +430,10 @@ type `box<T>` — they write `T?` and the compiler picks the right layout.
 
 ### Acceptance criteria
 
-- [ ] D2: no runtime call site allocates a heap object for a `float32` /
-      `float64` value; float wire carries no `0xFFFE` tag
+- [x] D2: no runtime call site allocates a heap object for a `float32` /
+      `float64` value; float wire carries no `0xFFFE` tag — verified: no
+      `new KlFloat` call sites remain, `kl_float_new` returns a tagged
+      inline `KL_INLINE_FLOAT_MARK | float32-bits` value
 - [ ] D3: a struct literal's evaluation does not call any heap-allocation
       runtime function; `sizeof`-equivalent struct size matches the
       declared-field-sum-plus-padding layout table, not a handle size
@@ -445,7 +447,7 @@ type `box<T>` — they write `T?` and the compiler picks the right layout.
 
 | Deliverable | Status | PR |
 |-------------|--------|-----|
-| L0: Float unboxing (D2) | ❌ not implemented | — |
+| L0: Float unboxing (D2) | ✅ implemented | [#108](https://github.com/kinglet-lang/bootstrap/pull/108) |
 | L1: Struct inline layout (D3) | ❌ not implemented | — |
 | L2: Fixed-size array inline (D4) | ❌ not implemented | — |
 | L3: Optional types (D14) | ✅ core implemented | [#109](https://github.com/kinglet-lang/bootstrap/pull/109), [#110](https://github.com/kinglet-lang/bootstrap/pull/110) |
