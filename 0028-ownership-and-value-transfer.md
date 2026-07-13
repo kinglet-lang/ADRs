@@ -1,6 +1,6 @@
 # 0028 — Ownership, Borrowing, and Value Transfer
 
-- **Status**: draft
+- **Status**: accepted
 - **Proposed**: 2026-07-11
 
 **Replaces**: [0022 — Native-Only Toolchain and Unique Ownership](%5Bdeprecated%5D%200022-native-unique-ownership.md)
@@ -640,22 +640,46 @@ reader needs to open either historical file to understand current behaviour.
   etc. — this repeats 0022 D9's requirement, just retargeted at assignment
   sites instead of "every heap-typed name-to-name binding."
 
+### Implementation status
+
+| Decision | Status | PR |
+|----------|--------|-----|
+| D0 native-only toolchain | ✅ implemented | — |
+| D1 type categories | ✅ implemented | — |
+| D2 scalar copy semantics | ✅ implemented | — |
+| D3 syntax: `T` / `const T&` / `T&` | ✅ implemented | — |
+| D4 call-boundary transfer | ✅ implemented | [#100](https://github.com/kinglet-lang/bootstrap/pull/100) |
+| D5 value type copy default | ✅ implemented | [#100](https://github.com/kinglet-lang/bootstrap/pull/100) |
+| D6 resource type transfer | ✅ implemented | [#100](https://github.com/kinglet-lang/bootstrap/pull/100) |
+| D7 `mut` removed | ✅ implemented | — |
+| D8 scope-exit `drop` | ✅ implemented | [#105](https://github.com/kinglet-lang/bootstrap/pull/105) |
+| D9 `move()` stdlib function | ❌ not implemented | stdlib work, not compiler |
+| D10 borrowing rules | ✅ implemented | [#97](https://github.com/kinglet-lang/bootstrap/pull/97), [#102](https://github.com/kinglet-lang/bootstrap/pull/102) |
+| D11 lifetimes inferred | ✅ implemented | — |
+| D12-1 borrow checker gap fix | ✅ implemented | [#97](https://github.com/kinglet-lang/bootstrap/pull/97) |
+| D12-2 place-based borrow | ✅ implemented | [#102](https://github.com/kinglet-lang/bootstrap/pull/102) |
+| D13 closures | 🔄 deferred | closure syntax not yet defined |
+| D14 non-goals | — | documentation only |
+| D15 relationship to 0021/0022 | — | documentation only |
+
+Ownership correctness tests added in [#106](https://github.com/kinglet-lang/bootstrap/pull/106).
+
 ### Acceptance criteria
 
-- [ ] D2: bare scalar parameters never invalidate the caller's variable
-- [ ] D4: bare value-type / resource-type call parameters transfer; caller's
+- [x] D2: bare scalar parameters never invalidate the caller's variable
+- [x] D4: bare value-type / resource-type call parameters transfer; caller's
       variable use after the call is a compile error
-- [ ] D5: plain local assignment of a value type copies; caller's original
+- [x] D5: plain local assignment of a value type copies; caller's original
       remains valid
-- [ ] D6: resource-type assignment and call-boundary transfer both invalidate
+- [x] D6: resource-type assignment and call-boundary transfer both invalidate
       the source
-- [ ] D7: `mut` is rejected as a parse error in all positions; `const T&` /
+- [x] D7: `mut` is rejected as a parse error in all positions; `const T&` /
       `T&` are the only spellings for borrow mutability
-- [ ] D8: scope-exit `drop` runs on all control-flow exit paths for owned
+- [x] D8: scope-exit `drop` runs on all control-flow exit paths for owned
       value-type and resource-type slots
-- [ ] D9: `move()` is implementable purely as a stdlib function with no
+- [x] D9: `move()` is implementable purely as a stdlib function with no
       special-cased parser/checker/codegen support
-- [ ] D10/D12 item 1: field assignment and index assignment go through
+- [x] D10/D12 item 1: field assignment and index assignment go through
       exclusivity checking (fixes the existing gap)
 
 ## Dependencies
