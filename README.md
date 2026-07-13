@@ -113,5 +113,5 @@ draft → accepted → implemented
 | 0025 | [Namespace-qualified type names](0025-namespace-qualified-type-names.md) | implemented | 2026-07-10 | 2026-07-11 |
 | 0026 | [Standard I/O capability model](0026-standard-io-capability-model.md) | draft | 2026-07-10 | |
 | 0027 | [Filesystem resource API](0027-filesystem-resource-api.md) | draft | 2026-07-10 | |
-| 0028 | [Ownership, borrowing, and value transfer](0028-ownership-and-value-transfer.md) | draft | 2026-07-11 | |
-| 0029 | [Value representation and memory layout](0029-value-representation-and-memory-layout.md) | draft | 2026-07-11 | |
+| 0028 | [Ownership, borrowing, and value transfer](0028-ownership-and-value-transfer.md) | accepted | 2026-07-11 | |
+| 0029 | [Value representation and memory layout](0029-value-representation-and-memory-layout.md) | accepted (L3 Optional delivered; L0-L2 pending) | 2026-07-11 | |
