@@ -301,9 +301,8 @@ merged independently, in either order.
 | **L1** | Struct ABI: `StructLayout` metadata table, inline stack allocation, declaration-order fields (D3) | struct literal evaluation no longer calls `kl_struct_new`; cross-module struct copy golden tests pass |
 | **L2** | Fixed-size array inline layout (D4) | `T[N]` local evaluation allocates on the stack, not via `kl_array_new` |
 | **L3** | `box<T>` narrowed to explicit heap indirection only (D5) | self-referential struct fields (`box<node> next`) compile and round-trip |
-| **L4** | Self-host `ll_emit.kl` parity with bootstrap `kir_to_llvm.cc` for L1–L3 | struct/array/box behaviour matches across bootstrap and self-host on shared test manifest |
 
-Bootstrap leads L0–L3; self-host tracks per slice (L4).
+Bootstrap leads L0–L3.
 
 ## Consequences
 
@@ -335,9 +334,6 @@ Bootstrap leads L0–L3; self-host tracks per slice (L4).
   `kl_struct_field_set` runtime API is retired** for the fixed-layout case;
   any code (including compiler-internal Kinglet source in self-host) relying
   on struct-as-heap-handle behaviour needs updating alongside L1.
-- **Self-host `ll_emit.kl` parity** (L4) historically lags bootstrap by one
-  slice per [0019](0019-self-host-llvm-backend.md)'s standing policy; L1–L3
-  should not be considered complete until L4 closes.
 
 ### Acceptance criteria
 
@@ -350,8 +346,6 @@ Bootstrap leads L0–L3; self-host tracks per slice (L4).
 - [ ] D5: `box<T>` remains the only route to heap indirection for a type that
       would otherwise be inline; `string` / dynamic `T[]` / `map` continue to
       heap-allocate independent of `box<T>`'s existence
-- [ ] D13 L4: self-host `ll_emit.kl` produces matching behaviour to bootstrap
-      for struct/array/box test manifests
 
 ## Dependencies
 
@@ -361,7 +355,6 @@ Bootstrap leads L0–L3; self-host tracks per slice (L4).
   slots and native lowering that L1–L3 build on.
 - [0017](0017-dense-nested-array-layout.md) — unaffected dense nested-array
   layout, noted for contrast in D8.
-- [0019](0019-self-host-llvm-backend.md) — self-host parity policy for L4.
 - [0028](0028-ownership-and-value-transfer.md) — consumes this document's
   type-tier classification (D1); no blocking dependency in either direction
   (D12).
