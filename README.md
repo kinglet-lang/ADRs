@@ -132,3 +132,4 @@ draft → accepted → implemented
 | 0027 | [Filesystem resource API](0027-filesystem-resource-api.md) | draft | 2026-07-10 | |
 | 0028 | [Ownership, borrowing, and value transfer](0028-ownership-and-value-transfer.md) | accepted · 13/15 delivered (D9 `move()`, D13 closures pending) | 2026-07-11 | |
 | 0029 | [Value representation and memory layout](0029-value-representation-and-memory-layout.md) | accepted · 6/9 delivered (L1 struct inline, L2 array inline, `none` literal pending) | 2026-07-11 | |
+| 0030 | [Definite assignment and literal width inference](0030-definite-assignment-and-literal-width-inference.md) | draft | 2026-07-14 | |
