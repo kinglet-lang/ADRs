@@ -1,7 +1,8 @@
 # 0030 — Definite Assignment and Literal Width Inference
 
-- **Status**: draft
+- **Status**: implemented
 - **Proposed**: 2026-07-14
+- **Completed**: 2026-07-14
 
 ## Context
 
