@@ -376,11 +376,12 @@ uses `FieldGet` followed by `JmpIfErr` to check the sentinel — if the
 operator then supplies the fallback value.
 
 **Chain access** (`head.next?.value`) — accessing a struct field through an
-Optional struct field — does **not** work as of the current implementation.
-`field?` returns `Optional<T>` (not unwrapped `T`), so `.value` on
-`Optional<node>` fails type-checking.  Chain access through Optional struct
-fields requires `field?` to return the unwrapped element type in the checker,
-which is tracked as future work.
+Optional struct field — works as of [#114](https://github.com/kinglet-lang/bootstrap/pull/114).
+`field?` unwraps to the element type (not `Optional<T>`), so `.value` on the
+result of `next?` type-checks as an ordinary field access on `node`. Multi-level
+chains (`head.next?.next?.value`) work the same way. At runtime, a null
+anywhere in the chain short-circuits to the null sentinel via `JmpIfErr`
+rather than dereferencing a null pointer.
 
 `none` as a literal value for the empty Optional is **not yet implemented**.
 The `null` literal serves as the empty Optional value in the current
