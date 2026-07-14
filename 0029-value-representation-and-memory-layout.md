@@ -376,11 +376,12 @@ uses `FieldGet` followed by `JmpIfErr` to check the sentinel — if the
 operator then supplies the fallback value.
 
 **Chain access** (`head.next?.value`) — accessing a struct field through an
-Optional struct field — does **not** work as of the current implementation.
-`field?` returns `Optional<T>` (not unwrapped `T`), so `.value` on
-`Optional<node>` fails type-checking.  Chain access through Optional struct
-fields requires `field?` to return the unwrapped element type in the checker,
-which is tracked as future work.
+Optional struct field — works as of [#114](https://github.com/kinglet-lang/bootstrap/pull/114).
+`field?` unwraps to the element type (not `Optional<T>`), so `.value` on the
+result of `next?` type-checks as an ordinary field access on `node`. Multi-level
+chains (`head.next?.next?.value`) work the same way. At runtime, a null
+anywhere in the chain short-circuits to the null sentinel via `JmpIfErr`
+rather than dereferencing a null pointer.
 
 `none` as a literal value for the empty Optional is **not yet implemented**.
 The `null` literal serves as the empty Optional value in the current
@@ -430,8 +431,10 @@ type `box<T>` — they write `T?` and the compiler picks the right layout.
 
 ### Acceptance criteria
 
-- [ ] D2: no runtime call site allocates a heap object for a `float32` /
-      `float64` value; float wire carries no `0xFFFE` tag
+- [x] D2: no runtime call site allocates a heap object for a `float32` /
+      `float64` value; float wire carries no `0xFFFE` tag — verified: no
+      `new KlFloat` call sites remain, `kl_float_new` returns a tagged
+      inline `KL_INLINE_FLOAT_MARK | float32-bits` value
 - [ ] D3: a struct literal's evaluation does not call any heap-allocation
       runtime function; `sizeof`-equivalent struct size matches the
       declared-field-sum-plus-padding layout table, not a handle size
@@ -445,7 +448,7 @@ type `box<T>` — they write `T?` and the compiler picks the right layout.
 
 | Deliverable | Status | PR |
 |-------------|--------|-----|
-| L0: Float unboxing (D2) | ❌ not implemented | — |
+| L0: Float unboxing (D2) | ✅ implemented | [#108](https://github.com/kinglet-lang/bootstrap/pull/108) |
 | L1: Struct inline layout (D3) | ❌ not implemented | — |
 | L2: Fixed-size array inline (D4) | ❌ not implemented | — |
 | L3: Optional types (D14) | ✅ core implemented | [#109](https://github.com/kinglet-lang/bootstrap/pull/109), [#110](https://github.com/kinglet-lang/bootstrap/pull/110) |
