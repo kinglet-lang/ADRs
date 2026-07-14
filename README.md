@@ -108,7 +108,7 @@ draft → accepted → implemented
 | 0003 | [Standard library roadmap](0003-stdlib-roadmap.md) | accepted (phased; io/fs refined by [0026](0026-standard-io-capability-model.md)/[0027](0027-filesystem-resource-api.md)) | 2026-05-29 | |
 | 0004 | [LSP roadmap](0004-lsp-roadmap.md) | deferred | 2026-05-30 | |
 | 0005 | [Backend architecture: KIR + dual backend](0005-backend-architecture.md) | implemented | 2026-05-31 | 2026-06-09 |
-| 0006 | [Error handling: ??, try, and Cast unification](0006-error-handling-unification.md) | implemented | 2026-06-01 | 2026-06-02 |
+| 0006 | [Error handling: ??, try, and Cast unification](0006-error-handling-unification.md) | implemented (cast matrix corrected/widened by [bootstrap#115](https://github.com/kinglet-lang/bootstrap/pull/115)) | 2026-06-01 | 2026-06-02 |
 | 0007 | [\[deprecated\] Trait system redesign](%5Bdeprecated%5D%200007-trait-system-redesign.md) | superseded-by [0009](0009-concepts-landing.md) | 2026-06-02 | |
 | 0008 | [\[deprecated\] KBC bytecode format evolution](%5Bdeprecated%5D%200008-kbc-format-evolution.md) | deprecated (implemented; bytecode path retired by [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)) | 2026-06-02 | 2026-06-03 |
 | 0009 | [Concepts landing](0009-concepts-landing.md) | implemented | 2026-06-03 | 2026-06-03 |
