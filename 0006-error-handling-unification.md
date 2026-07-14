@@ -117,3 +117,47 @@ Extend `CastTo` to produce Result enum variants instead of `null`: on success pu
 - All error handling flows through two operators: `??` (recover) and `try` (propagate).
 - Fallible casts are impossible to ignore silently.
 - Existing code using `Cast ... else` must migrate to `??`.
+
+## Amendments
+
+### 2026-07-14 — Cast matrix corrected and widened (bootstrap [#115](https://github.com/kinglet-lang/bootstrap/pull/115))
+
+The D2 fallibility matrix above only ever documented `int`/`float`/`string`;
+it never covered `char`, `byte`, `bool`, `enum`, or `null` as cast sources,
+and an implementation bug independently made the true behavior diverge from
+what any doc claimed. `check_cast()` resolved `char`/`byte` targets through
+the same branch used for canonical integer widths (`canonical_int_type_name`
+maps `"char"` → `"int8"` and `"byte"` → `"uint8"`, both truthy), so the
+dedicated char/byte source whitelist never actually ran — `Float` and `Enum`
+sources silently cast to `char(...)`/`byte(...)` and produced a bare `Int`
+type, not the intended `Char`/`Byte`. Fixed in bootstrap PR #115 by moving
+the char/byte dispatch ahead of the integer-width branch.
+
+The same PR audited the full source × target matrix against the runtime
+lowering in `kinglet_rt_enum.cc` and opened three infallible conversions the
+runtime already implemented but the checker rejected: `bool → int`,
+`bool → float`, `char → float`, and `enum → float` (`enum → int` was already
+supported). The corrected and completed matrix, superseding the D2 table
+above:
+
+| Source \ Target | int | float | string | char | byte |
+|---|---|---|---|---|---|
+| int | infallible | infallible | infallible | infallible | infallible |
+| float | infallible | infallible | infallible | rejected | rejected |
+| string | fallible | fallible | infallible | fallible | fallible |
+| char | infallible | infallible | infallible | infallible | infallible |
+| byte | infallible | infallible | infallible | infallible | infallible |
+| bool | infallible | infallible | infallible | rejected | rejected |
+| enum | infallible | infallible | rejected | rejected | rejected |
+| null | rejected | rejected | infallible | rejected | rejected |
+
+`byte` has no independent `TypeKind` — `byte_type()` is
+`make_int_type("uint8")`, sharing `TypeKind::Int` with `int` — so it carries
+the same source privileges as `int` for every target.
+
+The remaining `rejected` cells are deliberate design boundaries, not gaps:
+`char → float` and `bool → char/byte` would blur char/bool's semantic
+identity into "small integer"; `enum → string` has no variant-name
+stringification (the runtime only exposes the ordinal, and `string(enum)`
+producing an ordinal string would read as if it produced the variant name);
+`null → <numeric>` has no sensible numeric value (`null` is not `0`).
