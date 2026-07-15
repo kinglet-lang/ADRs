@@ -2,7 +2,7 @@
 
 - **Status**: accepted
 - **Proposed**: 2026-07-10
-- **Revised**: 2026-07-11, 2026-07-15
+- **Revised**: 2026-07-11, 2026-07-15, 2026-07-16
 
 Depends on: [0025](0025-namespace-qualified-type-names.md) (namespace-qualified
 type names), and the language's existing `concept` mechanism.
@@ -218,7 +218,7 @@ type checker's semantic context, following the same pattern as the existing
   [0025](0025-namespace-qualified-type-names.md) in type position.
 - The concept declarations (D1) are **not** written in user `.kl` source;
   they are synthesized internally by the checker, identical to how
-  `CastError` is pre-registered (`type_checker.cc:1057`).
+  `CastError` is pre-registered (`type_checker.cc:1142`).
 
 This avoids a dependency on the stdlib tree (ADR 0003 Phase A), which has
 not landed yet. When stdlib eventually materializes, the builtin
@@ -312,15 +312,29 @@ already `read` is already a reader.
 | D4 no accessor wrappers | ✅ design only | enforced by convention, no compiler check needed |
 | D5 stdio unchanged | ✅ implemented | `io::out`/`err`/`in` remain intrinsics |
 | D6 single-type-param concepts | ✅ implemented | concept mechanism supports exactly this shape |
-| D7 compiler-builtin concepts | ❌ not implemented | `reader`/`writer` not yet registered in `concept_registry_` |
+| D7 compiler-builtin concepts | ✅ implemented | `reader`/`writer` registered in `concept_registry_` before user declarations; `io::`-qualified and bare (with `using io;`) names resolve correctly; user-declared concepts overwrite builtins (PR #125, commit `67e0845`) |
 | D8 stdio not capability-satisfying | ✅ documented | `native_fn` placeholder confirmed in code |
 
 ### Verified against code (2026-07-15)
 
-- `concept reader<T> { int read(T self, byte[] buf); }` — parses, type-checks ✅
-- `int consume(reader input) { return input.read(buf); }` — concept-typed param, UFCS dispatch ✅
+- `concept reader<T> { int read(T self, byte[] buf); }` - parses, type-checks ✅
+- `int consume(reader input) { return input.read(buf); }` - concept-typed param, UFCS dispatch ✅
 - `struct fake_file { int fd; }` + `int read(fake_file self, byte[] buf) { ... }` satisfies `reader` ✅
-- `consume(fake_file_value)` — monomorphizes and runs correctly ✅
+- `consume(fake_file_value)` - monomorphizes and runs correctly ✅
 - Two concept-typed params in one function (`pipe(reader input, writer output)`) ✅
 - Concept-typed param forwarding to another concept-generic fn ✅ (existing `concept_forward.kl` exec test)
-- `namespace io { concept reader<T> { ... } }` — **not supported** (parser rejects namespace blocks; D7 documents the compiler-builtin registration approach as the alternative)
+- `namespace io { concept reader<T> { ... } }` - **not supported** (parser rejects namespace blocks; D7 documents the compiler-builtin registration approach as the alternative)
+
+### D7 implementation verified (2026-07-16, PR #125, commit `67e0845`)
+
+- `reader`/`writer` pre-registered in `concept_registry_` with signatures
+  `uint64 read(T self, byte[]& buffer)` and `uint64 write(T self, byte[] data)` ✅
+- Bare `reader`/`writer` visible with `using io;`, blocked without it ✅
+- `io::reader`/`io::writer` qualified names resolve unconditionally ✅
+- User-declared `concept reader<T>` overwrites the builtin (source location `{0,0,0}` distinguishes builtin from user-declared) ✅
+- `io::` prefix stripped in `resolve_type_expr`, `function_uses_concept_params`,
+  `compile_call` concept-param check, `compile_function` param overrides,
+  and `substitute_concepts` ✅
+- Test: `tests/exec/cases/builtin_io_concepts.kl` — bare + qualified + UFCS dispatch + monomorphization ✅
+- Full suite: 88/88 exec + 70/70 sema passing ✅
+
