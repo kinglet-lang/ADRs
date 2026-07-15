@@ -1,8 +1,8 @@
 # 0026 — Standard I/O Capability Model
 
-- **Status**: draft
+- **Status**: accepted
 - **Proposed**: 2026-07-10
-- **Revised**: 2026-07-11
+- **Revised**: 2026-07-11, 2026-07-15
 
 Depends on: [0025](0025-namespace-qualified-type-names.md) (namespace-qualified
 type names), and the language's existing `concept` mechanism.
@@ -63,7 +63,7 @@ parallel struct + member-table dispatch path.
 
 ```kinglet
 concept reader<T> {
-  uint64 read(T self, &mut byte[] buffer);
+  uint64 read(T self, byte[]& buffer);
 }
 
 concept writer<T> {
@@ -85,7 +85,7 @@ first parameter is that type. For example, `fs::file` satisfies `io::reader` by
 providing:
 
 ```kinglet
-uint64 read(fs::file self, &mut byte[] buffer) { ... }
+uint64 read(fs::file self, byte[]& buffer) { ... }
 ```
 
 No `satisfies` keyword is needed. Satisfaction is checked structurally at the
@@ -198,9 +198,57 @@ input and an output type) are out of scope for this ADR.
   adapters are the mechanism for added state.
 - This ADR does not add a `usize` type. Byte counts and sizes use the existing
   `uint64`; read/write buffers use the existing `byte[]` (mutable buffers as
-  `&mut byte[]`). A pointer-width `usize` alias, if wanted, is a separate
+  `byte[]&`). A pointer-width `usize` alias, if wanted, is a separate
   type-system decision.
 - This ADR does not introduce asynchronous I/O of any kind.
+
+### D7 - Namespace registration: `io::reader` / `io::writer` are compiler-builtin concepts
+
+The `io` namespace is a compiler-hardcoded runtime namespace (like `fs` and
+`sys`), not a `.kl` module loaded via `import`. The `io::reader` and
+`io::writer` concepts are registered as **compiler-builtin concepts** in the
+type checker's semantic context, following the same pattern as the existing
+`io::out` / `io::err` / `io::in` intrinsics:
+
+- The checker registers `reader` and `writer` in `concept_registry_` during
+  initialization (alongside the existing `CastError` pre-registration).
+- `using io;` makes `reader` and `writer` visible as unqualified names,
+  just as it makes `out`, `err`, `in` visible today.
+- `io::reader` and `io::writer` are usable as qualified type names via
+  [0025](0025-namespace-qualified-type-names.md) in type position.
+- The concept declarations (D1) are **not** written in user `.kl` source;
+  they are synthesized internally by the checker, identical to how
+  `CastError` is pre-registered (`type_checker.cc:1057`).
+
+This avoids a dependency on the stdlib tree (ADR 0003 Phase A), which has
+not landed yet. When stdlib eventually materializes, the builtin
+registration can be replaced by a `stdlib/io/io.kl` declaration without
+changing any user code.
+
+### D8 - `io::out` / `io::err` / `io::in` are not capability-satisfying values
+
+This restates D5 with implementation detail for clarity. In the current
+compiler, `io::out` / `io::err` / `io::in` are resolved as `native_fn`
+placeholder types (`type_checker.cc:2138`), not as struct-shaped values
+with a type identity. They cannot satisfy a concept because:
+
+1. Concept satisfaction requires a free function `read(T self, ...)` /
+   `write(T self, ...)` where `T` is a concrete type. `native_fn` is not
+   a type users can write free functions for.
+2. `io::out.line("hello")` dispatches through `io_intrinsics` hardcoded
+   member tables, not through UFCS.
+
+Promoting stdio objects to first-class typed values that satisfy
+`io::writer` / `io::reader` requires:
+- Giving `io::out` / `io::err` a real struct type (e.g. `io::stdout`)
+  with a `write` method.
+- Giving `io::in` a real struct type (e.g. `io::stdin`) with a `read`
+  method.
+- Changing the checker and compiler to treat these as typed values
+  instead of `native_fn` placeholders.
+
+This is deferred to a future ADR. The first concrete satisfier of
+`io::reader` / `io::writer` is `fs::file` ([0027](0027-filesystem-resource-api.md)).
 
 ## Consequences
 
@@ -253,3 +301,26 @@ already `read` is already a reader.
   (`out`/`err`/`in` codegen dispatch and concept-generic monomorphization).
 - Depended on by [0027](0027-filesystem-resource-api.md) (`fs::file` as the
   first concrete satisfier of `io::reader` / `io::writer`).
+
+## Implementation status
+
+| Decision | Status | Notes |
+|----------|--------|-------|
+| D1 `reader`/`writer` concepts | ✅ verified feasible | concept syntax, concept-typed params, UFCS dispatch all work (tested on bootstrap `b8b5fd7`) |
+| D2 generic algorithms | ✅ verified feasible | `int parse(reader input)` compiles and monomorphizes correctly |
+| D3 resource-specific ops | ✅ design only | no `fs::file` type yet (0027 still draft) |
+| D4 no accessor wrappers | ✅ design only | enforced by convention, no compiler check needed |
+| D5 stdio unchanged | ✅ implemented | `io::out`/`err`/`in` remain intrinsics |
+| D6 single-type-param concepts | ✅ implemented | concept mechanism supports exactly this shape |
+| D7 compiler-builtin concepts | ❌ not implemented | `reader`/`writer` not yet registered in `concept_registry_` |
+| D8 stdio not capability-satisfying | ✅ documented | `native_fn` placeholder confirmed in code |
+
+### Verified against code (2026-07-15)
+
+- `concept reader<T> { int read(T self, byte[] buf); }` — parses, type-checks ✅
+- `int consume(reader input) { return input.read(buf); }` — concept-typed param, UFCS dispatch ✅
+- `struct fake_file { int fd; }` + `int read(fake_file self, byte[] buf) { ... }` satisfies `reader` ✅
+- `consume(fake_file_value)` — monomorphizes and runs correctly ✅
+- Two concept-typed params in one function (`pipe(reader input, writer output)`) ✅
+- Concept-typed param forwarding to another concept-generic fn ✅ (existing `concept_forward.kl` exec test)
+- `namespace io { concept reader<T> { ... } }` — **not supported** (parser rejects namespace blocks; D7 documents the compiler-builtin registration approach as the alternative)
