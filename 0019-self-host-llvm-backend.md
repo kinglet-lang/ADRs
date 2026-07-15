@@ -157,3 +157,13 @@ overflow parity is a later tier). Typed-pointer syntax (`i64*`) is used so the
 emitted `.ll` assembles on LLVM 14 as well as 15+.
 
 Deferred: aggregates (structs/arrays/strings), and errors.
+
+### 2026-07-14 - S1 test set expansion
+
+The Shadow LLVM backend S1 manifest has grown from the initial ~42 cases to
+**95 test cases** in `kinglet/tests/native/shadow_manifest.txt`, covering
+integer arithmetic, bitwise/shift, comparisons, control flow (if/else, while,
+for), function calls (including recursion), and string operations. The S1
+scope described in the original Amendment (integer/control-flow lowering) is
+unchanged; the expansion reflects additional test coverage within that scope,
+not new lowering capabilities.

@@ -30,13 +30,26 @@ Miscellaneous features from the original bs TODO that don't warrant individual d
 
 ## Amendments
 
-### 2026-06-21 — Native unique ownership ([0022](%5Bdeprecated%5D%200022-native-unique-ownership.md))
+### 2026-06-21 - Native unique ownership ([0022](%5Bdeprecated%5D%200022-native-unique-ownership.md))
 
 Reference types, borrows, and heap ownership are specified in
 [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) (supersedes draft
 [0021](%5Bdeprecated%5D%200021-references-and-move.md)). No `move()` keyword; transfer uses `unique T`.
 
 Original §Syntax / §Performance lists above are preserved for historical context.
+
+### 2026-07-14 - Optional types and `?` operator implemented ([0028](0028-ownership-and-value-transfer.md), [0029](0029-value-representation-and-memory-layout.md))
+
+Two items from §Types and Patterns are now implemented via later ADRs:
+
+- [x] Error propagation `?` postfix operator (requires Result/Optional type)
+      — **implemented**: `field?` safe access (ADR 0029 D14, PR #113/#114) and
+      `?:` null-coalesce operator provide Optional-based error propagation.
+- [x] Zero-overhead optional: `int? x = null;` with niche optimization
+      — **implemented**: `TypeKind::Optional`, null sentinel `0xFFFB<<48`,
+      inline tagged representation for scalars (ADR 0029 D14, PR #109–#112).
+
+Original §Types and Patterns list above is preserved for historical context.
 
 ## Concurrency (from P4, deferred)
 
