@@ -101,35 +101,61 @@ draft → accepted → implemented
 
 ## Index
 
-| # | Title | Status | Proposed | Completed |
-|---|-------|--------|----------|-----------|
-| 0001 | [Pending syntax and performance items](0001-pending-syntax-and-perf.md) | draft | 2026-05-17 | |
-| 0002 | [Design principles](0002-design-principles.md) | implemented | 2026-05-21 | 2026-05-25 |
-| 0003 | [Standard library roadmap](0003-stdlib-roadmap.md) | accepted (phased; io/fs refined by [0026](0026-standard-io-capability-model.md)/[0027](0027-filesystem-resource-api.md)) | 2026-05-29 | |
-| 0004 | [LSP roadmap](0004-lsp-roadmap.md) | deferred | 2026-05-30 | |
-| 0005 | [Backend architecture: KIR + dual backend](0005-backend-architecture.md) | implemented | 2026-05-31 | 2026-06-09 |
-| 0006 | [Error handling: ??, try, and Cast unification](0006-error-handling-unification.md) | implemented (cast matrix corrected/widened by [bootstrap#115](https://github.com/kinglet-lang/bootstrap/pull/115)) | 2026-06-01 | 2026-06-02 |
-| 0007 | [\[deprecated\] Trait system redesign](%5Bdeprecated%5D%200007-trait-system-redesign.md) | superseded-by [0009](0009-concepts-landing.md) | 2026-06-02 | |
-| 0008 | [\[deprecated\] KBC bytecode format evolution](%5Bdeprecated%5D%200008-kbc-format-evolution.md) | deprecated (implemented; bytecode path retired by [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)) | 2026-06-02 | 2026-06-03 |
-| 0009 | [Concepts landing](0009-concepts-landing.md) | implemented | 2026-06-03 | 2026-06-03 |
-| 0010 | [\[deprecated\] VM redesign and embedded self-host binary](%5Bdeprecated%5D%200010-vm-redesign.md) | deprecated (Part 1 implemented; VM path retired by [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)) | 2026-06-03 | 2026-06-08 |
-| 0011 | [Module system redesign](0011-module-system-redesign.md) | deprecated (core retained; syntax superseded by [0018](0018-logical-module-system.md)) | 2026-06-03 | 2026-06-04 |
-| 0012 | [Test suite redesign](0012-test-suite-redesign.md) | implemented | 2026-06-08 | 2026-06-08 |
-| 0013 | [\[deprecated\] Bootstrap bytecode parity](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md) | deprecated (implemented; parity retired by [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)) | 2026-06-08 | 2026-06-09 |
-| 0014 | [Compilation toolchain architecture](0014-compilation-toolchain-architecture.md) | implemented | 2026-06-09 | 2026-06-10 |
-| 0015 | [LLVM backend roadmap](0015-llvm-backend-roadmap.md) | implemented | 2026-06-09 | 2026-06-10 |
-| 0016 | [Typed KIR for native lowering](0016-typed-kir.md) | implemented (phase 1; phase 2 partial) | 2026-06-10 | 2026-06-10 |
-| 0017 | [Dense layout for `T[][]…[]` syntax](0017-dense-nested-array-layout.md) | implemented (v1: 2D literals) | 2026-06-12 | 2026-06-12 |
-| 0018 | [Logical module system](0018-logical-module-system.md) | implemented (source-level modules; manifest shape amended by [0020](0020-project-manifest-and-targets.md)) | 2026-06-17 | 2026-06-20 |
-| 0019 | [Self-host LLVM backend](0019-self-host-llvm-backend.md) | accepted (S0 + S1 lowering delivered) | 2026-06-17 | |
-| 0020 | [Project manifest (`.nest`) and build targets](0020-project-manifest-and-targets.md) | implemented (target-block layout; earlier layouts deprecated) | 2026-06-17 | 2026-07-03 |
-| 0021 | [\[deprecated\] References and move semantics](%5Bdeprecated%5D%200021-references-and-move.md) | superseded-by [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) | 2026-06-21 | |
-| 0022 | [\[deprecated\] Native-only toolchain and unique ownership](%5Bdeprecated%5D%200022-native-unique-ownership.md) | superseded-by [0028](0028-ownership-and-value-transfer.md) (D1 native-only toolchain carried forward unchanged) | 2026-06-21 | |
-| 0023 | [\[deprecated\] Data types, literals, and ABI](%5Bdeprecated%5D%200023-data-types-and-abi.md) | superseded-by [0029](0029-value-representation-and-memory-layout.md) (literal/width-table content carried forward unchanged) | 2026-06-21 | |
-| 0024 | [LSP completion: Sema-backed field-access resolution](0024-lsp-completion-sema-integration.md) | implemented | 2026-07-06 | 2026-07-06 |
-| 0025 | [Namespace-qualified type names](0025-namespace-qualified-type-names.md) | implemented | 2026-07-10 | 2026-07-11 |
-| 0026 | [Standard I/O capability model](0026-standard-io-capability-model.md) | draft | 2026-07-10 | |
-| 0027 | [Filesystem resource API](0027-filesystem-resource-api.md) | draft | 2026-07-10 | |
-| 0028 | [Ownership, borrowing, and value transfer](0028-ownership-and-value-transfer.md) | accepted · 13/15 delivered (D9 `move()`, D13 closures pending) | 2026-07-11 | |
-| 0029 | [Value representation and memory layout](0029-value-representation-and-memory-layout.md) | accepted · 6/9 delivered (L1 struct inline, L2 array inline, `none` literal pending) | 2026-07-11 | |
-| 0030 | [Definite assignment and literal width inference](0030-definite-assignment-and-literal-width-inference.md) | implemented | 2026-07-14 | 2026-07-14 |
+**Progress overview**: 30 ADRs total — 14 implemented · 4 accepted (in progress) · 3 draft · 1 deferred · 8 deprecated/superseded.
+
+### Active
+
+#### Implemented
+
+| # | Title | Proposed | Completed | Notes |
+|---|-------|----------|-----------|-------|
+| 0002 | [Design principles](0002-design-principles.md) | 2026-05-21 | 2026-05-25 | |
+| 0005 | [Backend architecture: KIR + dual backend](0005-backend-architecture.md) | 2026-05-31 | 2026-06-09 | |
+| 0006 | [Error handling: ??, try, and Cast unification](0006-error-handling-unification.md) | 2026-06-01 | 2026-06-02 | cast matrix corrected/widened by [bootstrap#115](https://github.com/kinglet-lang/bootstrap/pull/115) |
+| 0009 | [Concepts landing](0009-concepts-landing.md) | 2026-06-03 | 2026-06-03 | |
+| 0012 | [Test suite redesign](0012-test-suite-redesign.md) | 2026-06-08 | 2026-06-08 | |
+| 0014 | [Compilation toolchain architecture](0014-compilation-toolchain-architecture.md) | 2026-06-09 | 2026-06-10 | |
+| 0015 | [LLVM backend roadmap](0015-llvm-backend-roadmap.md) | 2026-06-09 | 2026-06-10 | |
+| 0016 | [Typed KIR for native lowering](0016-typed-kir.md) | 2026-06-10 | 2026-06-10 | phase 1; phase 2 partial |
+| 0017 | [Dense layout for `T[][]…[]` syntax](0017-dense-nested-array-layout.md) | 2026-06-12 | 2026-06-12 | v1: 2D literals |
+| 0018 | [Logical module system](0018-logical-module-system.md) | 2026-06-17 | 2026-06-20 | manifest shape amended by [0020](0020-project-manifest-and-targets.md) |
+| 0020 | [Project manifest (`.nest`) and build targets](0020-project-manifest-and-targets.md) | 2026-06-17 | 2026-07-03 | target-block layout |
+| 0024 | [LSP completion: Sema-backed field-access resolution](0024-lsp-completion-sema-integration.md) | 2026-07-06 | 2026-07-06 | |
+| 0025 | [Namespace-qualified type names](0025-namespace-qualified-type-names.md) | 2026-07-10 | 2026-07-11 | |
+| 0030 | [Definite assignment and literal width inference](0030-definite-assignment-and-literal-width-inference.md) | 2026-07-14 | 2026-07-14 | |
+
+#### Accepted (in progress)
+
+| # | Title | Delivered | Remaining | Proposed |
+|---|-------|-----------|-----------|----------|
+| 0003 | [Standard library roadmap](0003-stdlib-roadmap.md) | phased | platform APIs still hardcoded; Phase A–D pending | 2026-05-29 |
+| 0019 | [Self-host LLVM backend](0019-self-host-llvm-backend.md) | S0 + S1 (95 test cases) | S2 aggregates/errors · S3 cross-target · S4 shadow-native driver | 2026-06-17 |
+| 0028 | [Ownership, borrowing, and value transfer](0028-ownership-and-value-transfer.md) | 13/14 decisions | D9 `move()` stdlib fn · D13 closures | 2026-07-11 |
+| 0029 | [Value representation and memory layout](0029-value-representation-and-memory-layout.md) | 6/9 deliverables | L1 struct inline · L2 fixed-array inline · `none` literal | 2026-07-11 |
+
+#### Draft
+
+| # | Title | Proposed | Blocked by |
+|---|-------|----------|------------|
+| 0001 | [Pending syntax and performance items](0001-pending-syntax-and-perf.md) | 2026-05-17 | — (parking lot; items promoted to standalone ADRs when ready) |
+| 0026 | [Standard I/O capability model](0026-standard-io-capability-model.md) | 2026-07-10 | 0025 ✅ |
+| 0027 | [Filesystem resource API](0027-filesystem-resource-api.md) | 2026-07-10 | 0025 ✅ · 0026 (draft) |
+
+#### Deferred
+
+| # | Title | Proposed |
+|---|-------|----------|
+| 0004 | [LSP roadmap](0004-lsp-roadmap.md) | 2026-05-30 |
+
+### Deprecated / Superseded
+
+| # | Title | Proposed | Superseded by |
+|---|-------|----------|---------------|
+| 0007 | [\[deprecated\] Trait system redesign](%5Bdeprecated%5D%200007-trait-system-redesign.md) | 2026-06-02 | [0009](0009-concepts-landing.md) |
+| 0008 | [\[deprecated\] KBC bytecode format evolution](%5Bdeprecated%5D%200008-kbc-format-evolution.md) | 2026-06-02 | deprecated (implemented; bytecode path retired by [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)) |
+| 0010 | [\[deprecated\] VM redesign and embedded self-host binary](%5Bdeprecated%5D%200010-vm-redesign.md) | 2026-06-03 | deprecated (Part 1 implemented; VM path retired by [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)) |
+| 0011 | [Module system redesign](0011-module-system-redesign.md) | 2026-06-03 | deprecated (core retained; syntax superseded by [0018](0018-logical-module-system.md)) |
+| 0013 | [\[deprecated\] Bootstrap bytecode parity](%5Bdeprecated%5D%200013-bootstrap-bytecode-delta.md) | 2026-06-08 | deprecated (implemented; parity retired by [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md)) |
+| 0021 | [\[deprecated\] References and move semantics](%5Bdeprecated%5D%200021-references-and-move.md) | 2026-06-21 | [0022](%5Bdeprecated%5D%200022-native-unique-ownership.md) → [0028](0028-ownership-and-value-transfer.md) |
+| 0022 | [\[deprecated\] Native-only toolchain and unique ownership](%5Bdeprecated%5D%200022-native-unique-ownership.md) | 2026-06-21 | [0028](0028-ownership-and-value-transfer.md) (D1 native-only toolchain carried forward) |
+| 0023 | [\[deprecated\] Data types, literals, and ABI](%5Bdeprecated%5D%200023-data-types-and-abi.md) | 2026-06-21 | [0029](0029-value-representation-and-memory-layout.md) (literal/width-table content carried forward) |
