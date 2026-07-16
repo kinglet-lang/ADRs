@@ -92,23 +92,20 @@ error from the underlying native open call, mirroring how the current
 `fs::options` (append, exclusive-create, explicit read+write) is deferred;
 see Non-goals.
 
-### D3 — Public whole-file convenience functions replace the `__` intrinsics
+### D3 — Public whole-file functions are byte-oriented
 
 ```kinglet
 byte[] fs::read(path);
-string fs::readtext(path);
-
 void fs::write(path, data);
-void fs::writetext(path, text);
 ```
 
 - `fs::read(path)` / `fs::write(path, data)` are byte-oriented and become
-  the public replacement for `fs::__read` / `fs::__write`'s current
-  whole-file behavior, but operate on `byte[]` rather than `string`.
-- `fs::readtext(path)` / `fs::writetext(path, text)` are the direct
-  drop-in replacements for the current `string`-based
-  `fs::__read` / `fs::__write` call sites, since today's intrinsics are
-  already text-shaped (`string` in, `string` out).
+  the public whole-file helpers over `byte[]`.
+- Public text helpers are deliberately not part of this surface. Earlier drafts
+  included `fs::readtext(path)` / `fs::writetext(path, text)` as string-shaped
+  aliases for the old `fs::__read` / `fs::__write` intrinsics, but those helpers
+  were removed in bootstrap PR #138. Keeping only byte-oriented whole-file
+  helpers avoids a parallel text API that bypasses the resource/capability model.
 - `fs::__listdir` is replaced by public `fs::list(path) -> string[]`,
   preserving current name-listing behavior under a public name.
 
@@ -130,8 +127,7 @@ Kinglet's array runtime layout stores elements as one 64-bit slot each, so
 still uses `byte[]` for `fs::read` / `fs::write` because:
 
 - it is the correct semantic type for "binary-safe file content that may not
-  be valid UTF-8", distinct from `string`, which existing `fs::readtext` /
-  `fs::writetext` keep human/text-oriented;
+  be valid UTF-8";
 - `io::reader.read(mut byte[] buffer)` / `io::writer.write(byte[] data)`
   already commit to `byte[]` for the same reason in
   [0026](0026-standard-io-capability-model.md).
@@ -149,13 +145,13 @@ removal is a follow-up once no in-tree code depends on them.
 
 ## Examples
 
-Whole-file read (replaces `fs::__read` call sites):
+Whole-file byte read:
 
 ```kinglet
 using fs;
 
 int main() {
-  string source = fs::readtext("src/main.kl");
+  byte[] source = fs::read("src/main.kl");
   return 0;
 }
 ```
@@ -189,7 +185,8 @@ int main() {
   if (!fs::exists("config.txt")) {
     return 1;
   }
-  string config = fs::readtext("config.txt");
+  fs::file config = fs::open("config.txt");
+  config.close();
   return 0;
 }
 ```
@@ -236,9 +233,9 @@ int main() {
 - `fs::file` satisfies `io::reader` / `io::writer` directly via its native
   `read` / `write` operations. No `reader()` / `writer()` wrapper objects are
   introduced.
-- `fs::read`/`fs::write` return/accept `byte[]`, changing the whole-file
-  binary path from `string` to `byte[]`; `fs::readtext`/`fs::writetext`
-  preserve today's `string` behavior unchanged.
+- `fs::read`/`fs::write` return/accept `byte[]`, making the public whole-file
+  path byte-oriented. String-shaped public helpers are intentionally omitted;
+  use `fs::file` plus `io::reader` / `io::writer` for capability-oriented I/O.
 
 ## Implementation status
 
@@ -246,19 +243,19 @@ int main() {
 |----------|--------|-------|
 | D1 `fs::file` resource type | ✅ implemented | native file handle resource with read/write/size/sync/close/open |
 | D2 `fs::open` / `fs::create` | ✅ implemented | namespace-qualified calls infer `fs::file` for concept-generic dispatch |
-| D3 public whole-file functions | ✅ implemented | `fs::read`, `fs::readtext`, `fs::write`, `fs::writetext`, `fs::list` |
+| D3 public whole-file functions | ✅ implemented | `fs::read`, `fs::write`, `fs::list`; text helpers removed in bootstrap PR #138 |
 | D4 `fs::exists` | ✅ implemented | public existence predicate |
-| D5 `byte[]` file content | ✅ implemented | byte-oriented APIs use `byte[]`; text APIs preserve `string` behavior |
+| D5 `byte[]` file content | ✅ implemented | public whole-file APIs use `byte[]`; no public text helper API |
 | D6 deprecated `__` intrinsics retained | ✅ implemented | existing `fs::__read` / `__write` / `__listdir` remain for compatibility |
 | 0026 integration | ✅ implemented | `fs::file` satisfies `io::reader` / `io::writer` directly; no accessor wrappers |
 
-### Verified against code (2026-07-16, bootstrap PR #136)
+### Verified against code (2026-07-16, bootstrap PR #138)
 
 - `fs::file` is accepted as an `io::reader` argument ✅
 - `fs::file` is accepted as an `io::writer` argument ✅
 - Writer path is verified by writing through the capability path and reading back the file contents ✅
 - `close()` / `sync()` remain `fs::file` resource operations, not `io::reader` / `io::writer` capability methods ✅
-- Full bootstrap suite after merge: 92/92 exec + 71/71 sema passing ✅
+- Full bootstrap suite after text-helper removal: 92/92 exec + 72/72 sema passing ✅
 
 ## Dependencies
 
