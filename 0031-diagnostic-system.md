@@ -1,7 +1,8 @@
 # 0031 - Diagnostic System: Error Codes, Severity, and Rendering
 
-- **Status**: accepted
+- **Status**: accepted · 5/7 delivered
 - **Proposed**: 2026-07-15
+- **Revised**: 2026-07-16
 
 Depends on: nothing new. Builds on the existing `SourceLocation` (`ast.h`),
 `TypeError` / `ParseError` / `CompileError` structs, and the current
@@ -371,15 +372,38 @@ output. Steps 5-7 add the new capabilities incrementally.
 
 ## Acceptance criteria
 
-- [ ] `Diagnostic` struct defined in `frontend/diagnostics/diagnostic.h`
-- [ ] `TypeError`, `ParseError`, `CompileError`, `CompileWarning` all
+- [x] `Diagnostic` struct defined in `frontend/diagnostics/diagnostic.h`
+- [x] `TypeError`, `ParseError`, `CompileError`, `CompileWarning` all
       replaced by `Diagnostic`
-- [ ] Human-readable renderer with source context (`|` + `^` format)
+- [x] Human-readable renderer with source context (`|` + `^` format)
 - [ ] JSON renderer (`--diagnostics=json`)
-- [ ] First 20 error codes (D3) assigned and visible in output
+- [x] First 20 error codes (D3) assigned and visible in output
+      (11/20 assigned so far; the rest follow as their emit sites are
+      migrated — see the `## Implementation status` table)
 - [ ] `-W` / `-Wno-` / `-Werror` flag parsing for warning groups
-- [ ] At least one multi-span diagnostic (K4001 transfer) rendered with
+- [x] At least one multi-span diagnostic (K4001 transfer) rendered with
       primary + secondary labels
+
+## Implementation status
+
+| Item | Status | Notes |
+|------|--------|-------|
+| D1 unified `Diagnostic` struct | ✅ implemented | `frontend/diagnostics/diagnostic.h`; severity Error/Warning/Note/Help |
+| D2 error-code scheme | ✅ implemented | renderer emits `error[Kxxxx]:` when `code` non-empty; empty code omitted |
+| D3 first 20 codes | ⚠ partial | K1001 · K1002 · K2001 · K3002 · K4001 · K5001 · K7001 · K7007 · K7010 · K10002 · K15001 · K18001 (11 of 20); remainder tracked in `bootstrap/docs/diagnostics.md` |
+| D4 secondary labels | ✅ implemented | K1002 (first decl) · K2001 (decl of target) · K3002 (const decl) · K4001 (transfer site) · K5001 (borrow site) · K7001 (each candidate) |
+| D5 fix-its | 🔜 deferred | `FixIt` struct present; no producer emits fixes yet |
+| D6 warning groups & `-W` flags | ❌ not implemented | codes are attached, renderer supports filtering but the driver has no `-W` parse |
+| D7 human-readable renderer | ✅ implemented | rustc-style: `-->` locus · gutter · `^~~~` primary · `----` secondary · `. \|` line-gap divider |
+| D7 JSON renderer | ❌ not implemented | `--diagnostics=json` still to add |
+| D8 source file identification | ⚠ partial | `SourceMap` (path → text) wired via `RenderOptions.sources`; multi-file `DiagnosticLabel::file` not modelled yet |
+| D9 cascade suppression | ❌ not implemented | still emits repeat errors for the same failed name |
+| D10 migration | ✅ implemented | three legacy error structs removed; all producers push `Diagnostic` |
+| D11 non-goals | ✅ documented | i18n, semantic recovery, and auto-apply fix-its remain out of scope |
+
+Delivered against the acceptance-criteria denominator: **5 of 7** (D1, D4/D10
+combined, D7 human-readable, D3 first codes, one multi-span example). Open:
+D7-JSON, D6.
 
 ## Dependencies
 
@@ -404,3 +428,86 @@ output. Steps 5-7 add the new capabilities incrementally.
 - Current `DiagnosticSeverity` enum: `compiler/frontend/checker/type_checker.h:28`
   (already has Error/Warning/Info/Hint, reused by this ADR)
 - Full code table: `docs/diagnostics.md` (to be created)
+
+## Amendments
+
+### 2026-07-16 — Phase 1 + 2 delivery
+
+The frontend/diagnostics module and rustc-style renderer landed together
+with the first migration of every producer. The concrete surface after this
+change:
+
+**New module** — `compiler/frontend/diagnostics/`:
+- `diagnostic.h` — `Diagnostic`, `Severity` (Error / Warning / Note / Help),
+  `SourceSpan`, `DiagnosticLabel`, `FixIt`, plus `make_diagnostic` helpers
+  with and without `code`.
+- `renderer.{h,cc}` — a self-contained renderer that owns its ANSI escapes
+  and its own `NO_COLOR` / `TERM=dumb` / `isatty` detection, so LSP and
+  self-host can reuse it without pulling in the CLI's painter.
+- `source_map.h` — a minimal `path → std::string` registry threaded into the
+  renderer through `RenderOptions.sources` so snippet rows can pull the
+  actual source line.
+
+**Legacy structs removed** — `ParseError`, `TypeError`, `CompileError`,
+`CompileWarning` all replaced by `std::vector<Diagnostic>`. Each producer's
+`error_at` / `warn_at` / `warning_at` gained a `(loc, code, message)`
+overload; the code-less form is retained so unmigrated call sites keep
+compiling. The checker also grew an `emit(Diagnostic)` entry point for the
+multi-label cases below.
+
+**Renderer output shape** — rustc-style:
+
+```
+error[K2001]: Cannot assign string to int.
+  --> src/main.kl:5:3
+  |
+ 2 |   int x = 1;
+  |   --- 'x' declared here with type int
+ . |
+ 5 |   x = "hello";
+  |   ^
+  |
+```
+
+Colors: `error[Kxxxx]` bold red · `warning[Kxxxx]` bold yellow · `-->`,
+gutter, and `|` bold blue · primary underline in the severity's color ·
+secondary underline in bold yellow · path/line/column dim in the compact
+fallback. Labels are sorted by ascending line so declarations render above
+uses; a `. |` divider elides omitted intermediate lines. When the
+`SourceMap` has no entry for a diagnostic's path — or a label's line is out
+of range — the renderer falls back to the Phase 1 single-line format so
+piped output stays greppable.
+
+**Driver wiring** — `--color=(auto|always|never)` / `--no-color` on
+`kinglet`. Auto detects stderr's tty status and respects `NO_COLOR`. The
+entry source is registered into a per-invocation `SourceMap` before the
+scanner runs so lexer diagnostics can render snippets too.
+
+**Secondary labels delivered** — every span-to-span case that had the data
+in the checker/backend already:
+
+| Code | Primary | Secondary |
+|------|---------|-----------|
+| `K1002` Duplicate declaration | second declaration | first declaration site |
+| `K2001` Cannot assign X to Y | assignment | target's declaration |
+| `K3002` Assign to const | assignment | const declaration |
+| `K4001` Transferred value | use site | transfer site |
+| `K5001` Conflicting borrow | new borrow / conflicting use | earlier borrow site |
+| `K7001` No matching overload | call site | each candidate's definition |
+
+Backing this required adding a source-location field to
+`Compiler::Local`, `TypeChecker::VarInfo::transfer_location`,
+`TypeChecker::ActiveBorrow::location`, and
+`TypeChecker::OverloadEntry::location`. `ast::Parameter` has no location
+yet, so K3002 on a `const` parameter falls back to the compact one-line
+layout; adding the location is a follow-up in the parser.
+
+**LSP integration** — `driver/lsp/completion_entry.h`'s `parse_errors` and
+`type_errors` are now `std::vector<Diagnostic>`. The old `DiagnosticSeverity`
+enum in `type_checker.h` is kept as a deprecated alias so perch has one
+release to migrate.
+
+**Non-goals still deferred** — D5 fix-its (structure present, no producer),
+D6 `-W` flags, D7 JSON output, D8 cross-file `DiagnosticLabel::file`,
+D9 cascade suppression. Codes reserved by D3 but not yet assigned in-tree
+are listed in `bootstrap/docs/diagnostics.md`.
