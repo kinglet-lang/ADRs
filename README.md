@@ -101,7 +101,7 @@ draft → accepted → implemented
 
 ## Index
 
-**Progress overview**: 31 ADRs total — 16 implemented · 5 accepted (in progress) · 1 draft · 1 deferred · 8 deprecated/superseded.
+**Progress overview**: 32 ADRs total — 16 implemented · 5 accepted (in progress) · 2 draft · 1 deferred · 8 deprecated/superseded.
 
 ### Active
 
@@ -141,6 +141,7 @@ draft → accepted → implemented
 | # | Title | Proposed | Blocked by |
 |---|-------|----------|------------|
 | 0001 | [Pending syntax and performance items](0001-pending-syntax-and-perf.md) | 2026-05-17 | - (parking lot; items promoted to standalone ADRs when ready) |
+| 0032 | [Text encoding API](0032-text-encoding-api.md) | 2026-07-16 | decode error policy / richer error model |
 
 #### Deferred
 
