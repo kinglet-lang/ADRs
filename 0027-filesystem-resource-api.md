@@ -1,7 +1,9 @@
 # 0027 — Filesystem Resource API
 
-- **Status**: draft
+- **Status**: implemented
 - **Proposed**: 2026-07-10
+- **Accepted**: 2026-07-16
+- **Completed**: 2026-07-16
 
 Depends on: [0025](0025-namespace-qualified-type-names.md) (qualified type
 names), [0026](0026-standard-io-capability-model.md) (`io::reader` /
@@ -50,14 +52,11 @@ directly, and hand off byte movement to `io::reader` / `io::writer`.
 
 ```kinglet
 pub struct file {
-  usize read(mut byte[] buffer);
-  usize write(byte[] data);
+  uint64 read(byte[]& buffer);
+  uint64 write(byte[] data);
 
-  u64 size();
+  uint64 size();
   void sync();
-
-  io::reader reader();
-  io::writer writer();
 
   void close();
   bool open();
@@ -67,9 +66,9 @@ pub struct file {
 `fs::file` owns a native file handle (POSIX fd or equivalent). Raw
 `read`/`write` remain directly on `file` (matching the existing intrinsic
 style of direct, unwrapped calls) so simple code does not need to construct
-a reader/writer for one-shot access. Code that wants the convenience methods
-from [0026](0026-standard-io-capability-model.md) (`exact`, `line`, `all`,
-`flush`) calls `.reader()` / `.writer()`.
+a reader/writer wrapper for one-shot access. Because `fs::file` provides the
+required `read` and `write` operations, it satisfies `io::reader` and
+`io::writer` directly per [0026](0026-standard-io-capability-model.md).
 
 `size()` and `sync()` are filesystem-specific and stay on `file`, not on
 `io::reader` / `io::writer`, per the resource/capability split in
@@ -167,13 +166,16 @@ Streaming read through the `io::reader` capability from
 ```kinglet
 using fs;
 
+int read_once(io::reader input) {
+  byte[] buffer = [];
+  buffer.resize(4096, 0);
+  uint64 n = input.read(buffer);
+  return 0;
+}
+
 int main() {
   fs::file input = fs::open("in.bin");
-  io::reader reader = input.reader();
-
-  byte[] buffer(4096);
-  usize n = reader.read(buffer);
-  input.close();
+  read_once(input); // fs::file satisfies io::reader directly.
   return 0;
 }
 ```
@@ -205,13 +207,13 @@ int main() {
   `fs::copy`, `fs::rename`, `fs::remove`/`fs::removeall`, or
   `fs::current`/`fs::chdir`/`fs::temp`. `fs::list` is the only directory
   operation carried over, from the existing `fs::__listdir`.
-- This ADR does not introduce `fs::stream`, `fs::StreamReader`, or any
-  bespoke fs-specific I/O type. Streaming access goes through
-  `fs::file.reader()` / `.writer()` returning the generic
-  [0026](0026-standard-io-capability-model.md) capability types. This
-  explicitly supersedes the `fs::StreamReader` / `fs::StreamWriter` design
-  considered in an earlier draft of this ADR slot; that design is not
-  carried forward.
+- This ADR does not introduce `fs::stream`, `fs::StreamReader`,
+  `fs::StreamWriter`, or accessor wrappers such as `fs::file.reader()` /
+  `.writer()`. Streaming access goes through `fs::file` satisfying the
+  generic [0026](0026-standard-io-capability-model.md) capabilities directly.
+  This explicitly supersedes the `fs::StreamReader` / `fs::StreamWriter` and
+  wrapper-accessor designs considered in earlier drafts of this ADR slot; those
+  designs are not carried forward.
 - This ADR does not change the underlying native runtime calls
   (`kl_native_fs_read` / `_write` / `_listdir`); it is a compiler-frontend
   and public-API change. Runtime-level changes needed to support `fs::file`
@@ -231,16 +233,39 @@ int main() {
   `read`/`write`/`size`/`sync`/`close`/`open` state) in addition to the
   existing one-shot `kl_native_fs_read`/`_write`/`_listdir` calls, which
   remain for the deprecated `__` intrinsics.
+- `fs::file` satisfies `io::reader` / `io::writer` directly via its native
+  `read` / `write` operations. No `reader()` / `writer()` wrapper objects are
+  introduced.
 - `fs::read`/`fs::write` return/accept `byte[]`, changing the whole-file
   binary path from `string` to `byte[]`; `fs::readtext`/`fs::writetext`
   preserve today's `string` behavior unchanged.
+
+## Implementation status
+
+| Decision | Status | Notes |
+|----------|--------|-------|
+| D1 `fs::file` resource type | ✅ implemented | native file handle resource with read/write/size/sync/close/open |
+| D2 `fs::open` / `fs::create` | ✅ implemented | namespace-qualified calls infer `fs::file` for concept-generic dispatch |
+| D3 public whole-file functions | ✅ implemented | `fs::read`, `fs::readtext`, `fs::write`, `fs::writetext`, `fs::list` |
+| D4 `fs::exists` | ✅ implemented | public existence predicate |
+| D5 `byte[]` file content | ✅ implemented | byte-oriented APIs use `byte[]`; text APIs preserve `string` behavior |
+| D6 deprecated `__` intrinsics retained | ✅ implemented | existing `fs::__read` / `__write` / `__listdir` remain for compatibility |
+| 0026 integration | ✅ implemented | `fs::file` satisfies `io::reader` / `io::writer` directly; no accessor wrappers |
+
+### Verified against code (2026-07-16, bootstrap PR #136)
+
+- `fs::file` is accepted as an `io::reader` argument ✅
+- `fs::file` is accepted as an `io::writer` argument ✅
+- Writer path is verified by writing through the capability path and reading back the file contents ✅
+- `close()` / `sync()` remain `fs::file` resource operations, not `io::reader` / `io::writer` capability methods ✅
+- Full bootstrap suite after merge: 92/92 exec + 71/71 sema passing ✅
 
 ## Dependencies
 
 - [0025](0025-namespace-qualified-type-names.md) — required for `fs::file`
   type syntax.
-- [0026](0026-standard-io-capability-model.md) — required for
-  `fs::file.reader()` / `.writer()`.
+- [0026](0026-standard-io-capability-model.md) — required for `fs::file`
+  to satisfy `io::reader` / `io::writer` directly.
 
 ## References
 

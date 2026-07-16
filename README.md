@@ -101,7 +101,7 @@ draft → accepted → implemented
 
 ## Index
 
-**Progress overview**: 31 ADRs total — 14 implemented · 6 accepted (in progress) · 2 draft · 1 deferred · 8 deprecated/superseded.
+**Progress overview**: 31 ADRs total — 16 implemented · 5 accepted (in progress) · 1 draft · 1 deferred · 8 deprecated/superseded.
 
 ### Active
 
@@ -122,6 +122,8 @@ draft → accepted → implemented
 | 0020 | [Project manifest (`.nest`) and build targets](0020-project-manifest-and-targets.md) | 2026-06-17 | 2026-07-03 | target-block layout |
 | 0024 | [LSP completion: Sema-backed field-access resolution](0024-lsp-completion-sema-integration.md) | 2026-07-06 | 2026-07-06 | |
 | 0025 | [Namespace-qualified type names](0025-namespace-qualified-type-names.md) | 2026-07-10 | 2026-07-11 | |
+| 0026 | [Standard I/O capability model](0026-standard-io-capability-model.md) | 2026-07-10 | 2026-07-16 | `io::reader` / `io::writer`; `fs::file` satisfaction via [0027](0027-filesystem-resource-api.md) |
+| 0027 | [Filesystem resource API](0027-filesystem-resource-api.md) | 2026-07-10 | 2026-07-16 | `fs::file` resource; direct `io::reader` / `io::writer` satisfaction |
 | 0030 | [Definite assignment and literal width inference](0030-definite-assignment-and-literal-width-inference.md) | 2026-07-14 | 2026-07-14 | |
 
 #### Accepted (in progress)
@@ -133,14 +135,12 @@ draft → accepted → implemented
 | 0028 | [Ownership, borrowing, and value transfer](0028-ownership-and-value-transfer.md) | 13/14 decisions | D9 `move()` stdlib fn · D13 closures | 2026-07-11 |
 | 0029 | [Value representation and memory layout](0029-value-representation-and-memory-layout.md) | 6/9 deliverables | L1 struct inline · L2 fixed-array inline · `none` literal | 2026-07-11 |
 | 0031 | [Diagnostic system: error codes, severity, and rendering](0031-diagnostic-system.md) | 0/7 deliverables | D1 Diagnostic struct · D3 first 20 codes · D5 fix-its · D6 warning groups · D7 rendering · cascade suppression · migration | 2026-07-15 |
-| 0026 | [Standard I/O capability model](0026-standard-io-capability-model.md) | 6/8 decisions | D7 compiler-builtin concept registration · D3/D4 await 0027 (`fs::file`) | 2026-07-10 |
 
 #### Draft
 
 | # | Title | Proposed | Blocked by |
 |---|-------|----------|------------|
 | 0001 | [Pending syntax and performance items](0001-pending-syntax-and-perf.md) | 2026-05-17 | - (parking lot; items promoted to standalone ADRs when ready) |
-| 0027 | [Filesystem resource API](0027-filesystem-resource-api.md) | 2026-07-10 | 0025 ✅ · 0026 ✅ (accepted) |
 
 #### Deferred
 

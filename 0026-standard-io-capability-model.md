@@ -1,7 +1,8 @@
 # 0026 — Standard I/O Capability Model
 
-- **Status**: accepted
+- **Status**: implemented
 - **Proposed**: 2026-07-10
+- **Completed**: 2026-07-16
 - **Revised**: 2026-07-11, 2026-07-15, 2026-07-16
 
 Depends on: [0025](0025-namespace-qualified-type-names.md) (namespace-qualified
@@ -306,10 +307,10 @@ already `read` is already a reader.
 
 | Decision | Status | Notes |
 |----------|--------|-------|
-| D1 `reader`/`writer` concepts | ✅ verified feasible | concept syntax, concept-typed params, UFCS dispatch all work (tested on bootstrap `b8b5fd7`) |
-| D2 generic algorithms | ✅ verified feasible | `int parse(reader input)` compiles and monomorphizes correctly |
-| D3 resource-specific ops | ✅ design only | no `fs::file` type yet (0027 still draft) |
-| D4 no accessor wrappers | ✅ design only | enforced by convention, no compiler check needed |
+| D1 `reader`/`writer` concepts | ✅ implemented | builtin `io::reader` / `io::writer` concepts registered by the checker |
+| D2 generic algorithms | ✅ implemented | concept-generic params monomorphize for concrete resources; `fs::file` coverage landed in bootstrap PR #136 |
+| D3 resource-specific ops | ✅ implemented | `fs::file` keeps `size` / `sync` / `close` / `open`; reader/writer only require `read` / `write` |
+| D4 no accessor wrappers | ✅ implemented | `fs::file` is passed directly where `io::reader` / `io::writer` is required; no `.reader()` / `.writer()` accessors |
 | D5 stdio unchanged | ✅ implemented | `io::out`/`err`/`in` remain intrinsics |
 | D6 single-type-param concepts | ✅ implemented | concept mechanism supports exactly this shape |
 | D7 compiler-builtin concepts | ✅ implemented | `reader`/`writer` registered in `concept_registry_` before user declarations; `io::`-qualified and bare (with `using io;`) names resolve correctly; user-declared concepts overwrite builtins (PR #125, commit `67e0845`) |
@@ -337,4 +338,13 @@ already `read` is already a reader.
   and `substitute_concepts` ✅
 - Test: `tests/exec/cases/builtin_io_concepts.kl` — bare + qualified + UFCS dispatch + monomorphization ✅
 - Full suite: 88/88 exec + 70/70 sema passing ✅
+
+### Capability satisfaction verified (2026-07-16, bootstrap PR #136)
+
+- `fs::file` satisfies `io::reader` through its compiler-native `read` operation ✅
+- `fs::file` satisfies `io::writer` through its compiler-native `write` operation ✅
+- Concept-generic functions can accept `fs::open(...)` / `fs::create(...)` results directly, without accessor wrappers ✅
+- Namespace-qualified concrete types in concept-generic monomorphization are mangled safely ✅
+- Test: `tests/exec/cases/fs_file_concept_satisfaction.kl` covers reader and writer paths with read-back verification ✅
+- Full suite after merge: 92/92 exec + 71/71 sema passing ✅
 
