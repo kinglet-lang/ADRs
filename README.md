@@ -134,7 +134,7 @@ draft → accepted → implemented
 | 0019 | [Self-host LLVM backend](0019-self-host-llvm-backend.md) | S0 + S1 (95 test cases) | S2 aggregates/errors · S3 cross-target · S4 shadow-native driver | 2026-06-17 |
 | 0028 | [Ownership, borrowing, and value transfer](0028-ownership-and-value-transfer.md) | 13/14 decisions | D9 `move()` stdlib fn · D13 closures | 2026-07-11 |
 | 0029 | [Value representation and memory layout](0029-value-representation-and-memory-layout.md) | 6/9 deliverables | L1 struct inline · L2 fixed-array inline · `none` literal | 2026-07-11 |
-| 0031 | [Diagnostic system: error codes, severity, and rendering](0031-diagnostic-system.md) | 0/7 deliverables | D1 Diagnostic struct · D3 first 20 codes · D5 fix-its · D6 warning groups · D7 rendering · cascade suppression · migration | 2026-07-15 |
+| 0031 | [Diagnostic system: error codes, severity, and rendering](0031-diagnostic-system.md) | 5/7 delivered | JSON renderer · `-W` flags | 2026-07-15 |
 
 #### Draft
 
